@@ -224,7 +224,7 @@ CheckoutController.class_eval do
     items = order.line_items.map do |item|
       price = (item.price * 100).to_i # convert for gateway
       { :name        => item.variant.product.name,
-        :description => item.variant.product.description[0..120],
+        :description => (item.variant.product.description[0..120] if item.variant.product.description),
         :sku         => item.variant.sku,
         :qty         => item.quantity,
         :amount      => price,
