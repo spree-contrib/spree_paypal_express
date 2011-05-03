@@ -251,8 +251,9 @@ CheckoutController.class_eval do
       credits_total = credits.map {|i| i[:amount] * i[:qty] }.sum
     end
 
-    opts = { :return_url        => request.protocol + request.host_with_port + "/orders/#{order.number}/checkout/paypal_confirm?payment_method_id=#{payment_method}",
-             :cancel_return_url => "http://"  + request.host_with_port + "/orders/#{order.number}/edit",
+    @rrur=ENV['RAILS_RELATIVE_URL_ROOT'].to_s
+    opts = { :return_url        => request.protocol + request.host_with_port + @rrur + "/orders/#{order.number}/checkout/paypal_confirm?payment_method_id=#{payment_method}",
+             :cancel_return_url => "http://" + request.host_with_port + @rrur + "/orders/#{order.number}/edit",             
              :order_id          => order.number,
              :custom            => order.number,
              :items             => items,
@@ -265,7 +266,7 @@ CheckoutController.class_eval do
     if stage == "checkout"
       opts[:handling] = 0
 
-      opts[:callback_url] = "http://"  + request.host_with_port + "/paypal_express_callbacks/#{order.number}"
+      opts[:callback_url] = "http://"  + request.host_with_port + @rrur + "/paypal_express_callbacks/#{order.number}"
       opts[:callback_timeout] = 3
     elsif stage == "payment"
       #hack to add float rounding difference in as handling fee - prevents PayPal from rejecting orders
