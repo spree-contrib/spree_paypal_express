@@ -205,7 +205,7 @@ CheckoutController.class_eval do
       :header_background_color => "ffffff",
       :header_border_color     => "ffffff",
       :allow_note              => true,
-      :locale                  => Spree::Config[:default_locale],
+      :locale                  => I18n.locale, #Spree::Config[:default_locale],
       :req_confirm_shipping    => false,   # for security, might make an option later
       :user_action             => user_action
 
@@ -228,10 +228,13 @@ CheckoutController.class_eval do
         :sku         => item.variant.sku,
         :qty         => item.quantity,
         :amount      => price,
+        :currency    => "EUR",
         :weight      => item.variant.weight,
         :height      => item.variant.height,
         :width       => item.variant.width,
-        :depth       => item.variant.weight }
+        :depth       => item.variant.weight,
+        :attributes! => { :amount => { :currency_id => "EUR"} }
+      }
       end
 
     credits = order.adjustments.map do |credit|
@@ -240,7 +243,8 @@ CheckoutController.class_eval do
           :description => credit.label,
           :sku         => credit.id,
           :qty         => 1,
-          :amount      => (credit.amount*100).to_i }
+          :amount      => (credit.amount*100).to_i },
+          :attributes! => { :amount => { :currency_id => "EUR"} }
       end
     end
 
@@ -256,6 +260,7 @@ CheckoutController.class_eval do
              :order_id          => order.number,
              :custom            => order.number,
              :items             => items,
+             :currency          => "EUR",
              :subtotal          => ((order.item_total * 100) + credits_total).to_i,
              :tax               => ((order.adjustments.map { |a| a.amount if ( a.source_type == 'Order' && a.label == 'Tax') }.compact.sum) * 100 ).to_i,
              :shipping          => ((order.adjustments.map { |a| a.amount if a.source_type == 'Shipment' }.compact.sum) * 100 ).to_i,
