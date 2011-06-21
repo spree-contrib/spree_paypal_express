@@ -231,7 +231,7 @@ CheckoutController.class_eval do
         :weight      => item.variant.weight,
         :height      => item.variant.height,
         :width       => item.variant.width,
-        :depth       => item.variant.weight,
+        :depth       => item.variant.weight
       }
       end
 
@@ -241,7 +241,7 @@ CheckoutController.class_eval do
           :description => credit.label,
           :sku         => credit.id,
           :quantity         => 1,
-          :amount      => (credit.amount*100).to_i },
+          :amount      => (credit.amount*100).to_i }
       end
     end
 
