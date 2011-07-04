@@ -205,7 +205,7 @@ CheckoutController.class_eval do
       :header_background_color => "ffffff",
       :header_border_color     => "ffffff",
       :allow_note              => true,
-      :locale                  => Spree::Config[:default_locale],
+      :locale                  => I18n.locale, #Spree::Config[:default_locale],
       :req_confirm_shipping    => false,   # for security, might make an option later
       :user_action             => user_action
 
@@ -222,16 +222,17 @@ CheckoutController.class_eval do
 
   def order_opts(order, payment_method, stage)
     items = order.line_items.map do |item|
-      price = (item.price * 100).to_i # convert for gateway
+      price = (item.price * 100).round.to_i # convert for gateway
       { :name        => item.variant.product.name,
         :description => (item.variant.product.description[0..120] if item.variant.product.description),
         :sku         => item.variant.sku,
-        :qty         => item.quantity,
+        :quantity         => item.quantity,
         :amount      => price,
         :weight      => item.variant.weight,
         :height      => item.variant.height,
         :width       => item.variant.width,
-        :depth       => item.variant.weight }
+        :depth       => item.variant.weight
+      }
       end
 
     credits = order.adjustments.map do |credit|
@@ -239,8 +240,8 @@ CheckoutController.class_eval do
         { :name        => credit.label,
           :description => credit.label,
           :sku         => credit.id,
-          :qty         => 1,
-          :amount      => (credit.amount*100).to_i }
+          :quantity         => 1,
+          :amount      => (credit.amount*100).round.to_i }
       end
     end
 
@@ -248,7 +249,7 @@ CheckoutController.class_eval do
     credits.compact!
     if credits.present?
       items.concat credits
-      credits_total = credits.map {|i| i[:amount] * i[:qty] }.sum
+      credits_total = credits.map {|i| i[:amount] * i[:quantity] }.sum
     end
 
     opts = { :return_url        => request.protocol + request.host_with_port + "/orders/#{order.number}/checkout/paypal_confirm?payment_method_id=#{payment_method}",
@@ -256,10 +257,11 @@ CheckoutController.class_eval do
              :order_id          => order.number,
              :custom            => order.number,
              :items             => items,
-             :subtotal          => ((order.item_total * 100) + credits_total).to_i,
-             :tax               => ((order.adjustments.map { |a| a.amount if ( a.source_type == 'Order' && a.label == 'Tax') }.compact.sum) * 100 ).to_i,
-             :shipping          => ((order.adjustments.map { |a| a.amount if a.source_type == 'Shipment' }.compact.sum) * 100 ).to_i,
-             :money             => (order.total * 100 ).to_i }
+             :currency          => "EUR",
+             :subtotal          => ((order.item_total * 100) + credits_total).round.to_i,
+             :tax               => ((order.adjustments.map { |a| a.amount if ( a.source_type == 'Order' && a.originator_type == 'TaxRate') }.compact.sum) * 100 ).round.to_i,
+             :shipping          => ((order.adjustments.map { |a| a.amount if a.source_type == 'Shipment' }.compact.sum) * 100 ).round.to_i,
+             :money             => (order.total * 100 ).round.to_i }
 
 
     if stage == "checkout"
@@ -271,7 +273,7 @@ CheckoutController.class_eval do
       #hack to add float rounding difference in as handling fee - prevents PayPal from rejecting orders
       #because the integer totals are different from the float based total. This is temporary and will be
       #removed once Spree's currency values are persisted as integers (normally only 1c)
-      opts[:handling] =  (order.total*100).to_i - opts.slice(:subtotal, :tax, :shipping).values.sum
+      opts[:handling] =  (order.total*100).round.to_i - opts.slice(:subtotal, :tax, :shipping).values.sum
     end
 
     opts
