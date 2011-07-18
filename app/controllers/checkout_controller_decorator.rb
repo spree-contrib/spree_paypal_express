@@ -178,6 +178,7 @@ CheckoutController.class_eval do
 
   def redirect_to_paypal_express_form_if_needed
     return unless (params[:state] == "payment")
+    return unless params[:order][:payments_attributes]
     if params[:order][:coupon_code]
       @order.update_attributes(object_params)
       @order.process_coupon_code
