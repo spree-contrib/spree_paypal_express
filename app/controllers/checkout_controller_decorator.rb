@@ -2,7 +2,6 @@ CheckoutController.class_eval do
   before_filter :redirect_to_paypal_express_form_if_needed, :only => [:update]
 
   def paypal_checkout
-    load_order
     opts = all_opts(@order, params[:payment_method_id], 'checkout')
     opts.merge!(address_options(@order))
     @gateway = paypal_gateway
@@ -26,7 +25,6 @@ CheckoutController.class_eval do
   end
 
   def paypal_payment
-    load_order
     opts = all_opts(@order,params[:payment_method_id], 'payment')
     opts.merge!(address_options(@order))
     @gateway = paypal_gateway
@@ -50,7 +48,8 @@ CheckoutController.class_eval do
   end
 
   def paypal_confirm
-    load_order
+
+    @order.state = 'confirm' if @order.payment_method.preferred_review
 
     opts = { :token => params[:token], :payer_id => params[:PayerID] }.merge all_opts(@order, params[:payment_method_id],  'payment')
     gateway = paypal_gateway
@@ -109,8 +108,6 @@ CheckoutController.class_eval do
   end
 
   def paypal_finish
-    load_order
-
     opts = { :token => params[:token], :payer_id => params[:PayerID] }.merge all_opts(@order, params[:payment_method_id], 'payment' )
     gateway = paypal_gateway
 
@@ -150,6 +147,7 @@ CheckoutController.class_eval do
       #need to force checkout to complete state
       until @order.state == "complete"
         if @order.next!
+          @order.update!
           state_callback(:after)
         end
       end
@@ -178,12 +176,12 @@ CheckoutController.class_eval do
 
   def redirect_to_paypal_express_form_if_needed
     return unless (params[:state] == "payment")
+    @order.update_attributes(object_params)
     if params[:order][:coupon_code]
-      @order.update_attributes(object_params)
       @order.process_coupon_code
     end
-    load_order
-    payment_method = PaymentMethod.find(params[:order][:payments_attributes].first[:payment_method_id])
+
+    payment_method = @order.payment_method
 
     if payment_method.kind_of?(BillingIntegration::PaypalExpress) || payment_method.kind_of?(BillingIntegration::PaypalExpressUk)
       redirect_to paypal_payment_order_checkout_url(@order, :payment_method_id => payment_method)
@@ -263,7 +261,6 @@ CheckoutController.class_eval do
              :shipping          => ((order.adjustments.map { |a| a.amount if a.source_type == 'Shipment' }.compact.sum) * 100 ).round.to_i,
              :money             => (order.total * 100 ).round.to_i }
 
-
     if stage == "checkout"
       opts[:handling] = 0
 
@@ -275,7 +272,6 @@ CheckoutController.class_eval do
       #removed once Spree's currency values are persisted as integers (normally only 1c)
       opts[:handling] =  (order.total*100).round.to_i - opts.slice(:subtotal, :tax, :shipping).values.sum
     end
-
     opts
   end
 
