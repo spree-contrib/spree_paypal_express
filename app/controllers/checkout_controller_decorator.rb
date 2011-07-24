@@ -222,9 +222,9 @@ CheckoutController.class_eval do
     items = order.line_items.map do |item|
       price = (item.price * 100).round.to_i # convert for gateway
       { :name        => item.variant.product.name,
-        :description => (item.variant.product.description[0..120] if item.variant.product.description),
+        :description => (item.variant.product.short_description[0..120] if item.variant.product.short_description),
         :sku         => item.variant.sku,
-        :quantity         => item.quantity,
+        :quantity    => item.quantity,
         :amount      => price,
         :weight      => item.variant.weight,
         :height      => item.variant.height,
@@ -238,7 +238,7 @@ CheckoutController.class_eval do
         { :name        => credit.label,
           :description => credit.label,
           :sku         => credit.id,
-          :quantity         => 1,
+          :quantity    => 1,
           :amount      => (credit.amount*100).round.to_i }
       end
     end
