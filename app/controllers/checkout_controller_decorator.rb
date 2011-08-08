@@ -218,7 +218,7 @@ CheckoutController.class_eval do
 
   # hook to override paypal site options
   def paypal_site_opts
-    {}
+    {:currency => payment_method.preferred_currency}
   end
 
   def order_opts(order, payment_method, stage)

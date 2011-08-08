@@ -8,7 +8,7 @@ class PaypalAccount < ActiveRecord::Base
   def capture(payment)
     authorization = find_authorization(payment)
 
-    ppx_response = payment.payment_method.provider.capture((100 * payment.amount).to_i, authorization.params["transaction_id"])
+    ppx_response = payment.payment_method.provider.capture((100 * payment.amount).to_i, authorization.params["transaction_id"], :currency => payment.payment_method.preferred_currency)
     if ppx_response.success?
       record_log payment, ppx_response
       payment.complete
