@@ -88,6 +88,7 @@ CheckoutController.class_eval do
         order_ship_address.save!
 
         @order.ship_address = order_ship_address
+        @order.bill_address = order_ship_address unless @order.bill_address
       end
       @order.save
 
@@ -150,6 +151,7 @@ CheckoutController.class_eval do
       #need to force checkout to complete state
       until @order.state == "complete"
         if @order.next!
+          @order.update!
           state_callback(:after)
         end
       end
@@ -201,7 +203,7 @@ CheckoutController.class_eval do
     { :description             => "Goods from #{Spree::Config[:site_name]}", # site details...
 
       #:page_style             => "foobar", # merchant account can set named config
-      :header_image            => "https://#{Spree::Config[:site_name]}/images/logo.png",
+      :header_image            => "https://#{Spree::Config[:site_url]}#{Spree::Config[:logo]}",
       :background_color        => "ffffff",  # must be hex only, six chars
       :header_background_color => "ffffff",
       :header_border_color     => "ffffff",
@@ -227,7 +229,7 @@ CheckoutController.class_eval do
       { :name        => item.variant.product.name,
         :description => (item.variant.product.description[0..120] if item.variant.product.description),
         :sku         => item.variant.sku,
-        :qty         => item.quantity,
+        :quantity    => item.quantity,
         :amount      => price,
         :weight      => item.variant.weight,
         :height      => item.variant.height,
@@ -240,7 +242,7 @@ CheckoutController.class_eval do
         { :name        => credit.label,
           :description => credit.label,
           :sku         => credit.id,
-          :qty         => 1,
+          :quantity    => 1,
           :amount      => (credit.amount*100).to_i }
       end
     end
@@ -249,10 +251,11 @@ CheckoutController.class_eval do
     credits.compact!
     if credits.present?
       items.concat credits
-      credits_total = credits.map {|i| i[:amount] * i[:qty] }.sum
+      credits_total = credits.map {|i| i[:amount] * i[:quantity] }.sum
     end
 
-    opts = { :return_url        => request.protocol + request.host_with_port + "/orders/#{order.number}/checkout/paypal_confirm?payment_method_id=#{payment_method}",
+    opts = { #:return_url        => request.protocol + request.host_with_port + "/orders/#{order.number}/checkout/paypal_confirm?payment_method_id=#{payment_method}",
+             :return_url        => "http://"  + request.host_with_port + "/orders/#{order.number}/checkout/paypal_confirm?payment_method_id=#{payment_method}",
              :cancel_return_url => "http://"  + request.host_with_port + "/orders/#{order.number}/edit",
              :order_id          => order.number,
              :custom            => order.number,
@@ -261,7 +264,9 @@ CheckoutController.class_eval do
              :tax               => ((order.adjustments.map { |a| a.amount if ( a.source_type == 'Order' && a.label == 'Tax') }.compact.sum) * 100 ).to_i,
              :shipping          => ((order.adjustments.map { |a| a.amount if a.source_type == 'Shipment' }.compact.sum) * 100 ).to_i,
              :money             => (order.total * 100 ).to_i }
-
+             
+      # add correct tax amount by subtracting subtotal and shipping otherwise tax = 0 -> need to check adjustments.map
+      opts[:tax] = (order.total*100).to_i - opts.slice(:subtotal, :shipping).values.sum
 
     if stage == "checkout"
       opts[:handling] = 0
