@@ -25,7 +25,7 @@ CheckoutController.class_eval do
     redirect_to :back
   end
 
-  def paypal_payment
+  def paypal_payment    
     load_order
     opts = all_opts(@order,params[:payment_method_id], 'payment')
     opts.merge!(address_options(@order))
@@ -49,7 +49,7 @@ CheckoutController.class_eval do
     redirect_to :back
   end
 
-  def paypal_confirm 
+  def paypal_confirm  
     load_order
 
     opts = { :token => params[:token], :payer_id => params[:PayerID] }.merge all_opts(@order, params[:payment_method_id],  'payment')
@@ -109,7 +109,7 @@ CheckoutController.class_eval do
     redirect_to edit_order_url(@order)
   end
 
-  def paypal_finish
+  def paypal_finish 
     load_order
 
     opts = { :token => params[:token], :payer_id => params[:PayerID] }.merge all_opts(@order, params[:payment_method_id], 'payment' )
@@ -160,7 +160,7 @@ CheckoutController.class_eval do
       redirect_to completion_route
 
     else
-      payment.fail!
+      payment.failure!
       order_params = {}
       gateway_error(ppx_auth_response)
 
@@ -178,8 +178,7 @@ CheckoutController.class_eval do
     payment.log_entries.create(:details => response.to_yaml)
   end
 
-  def redirect_to_paypal_express_form_if_needed  
-    debugger  
+  def redirect_to_paypal_express_form_if_needed    
     return unless (params[:state] == "payment")
     return unless params[:order][:payments_attributes]
     if params[:order][:coupon_code]
