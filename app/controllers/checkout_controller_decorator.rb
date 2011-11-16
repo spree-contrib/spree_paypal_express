@@ -25,7 +25,7 @@ CheckoutController.class_eval do
     redirect_to :back
   end
 
-  def paypal_payment
+  def paypal_payment    
     load_order
     opts = all_opts(@order,params[:payment_method_id], 'payment')
     opts.merge!(address_options(@order))
@@ -49,7 +49,7 @@ CheckoutController.class_eval do
     redirect_to :back
   end
 
-  def paypal_confirm
+  def paypal_confirm  
     load_order
 
     opts = { :token => params[:token], :payer_id => params[:PayerID] }.merge all_opts(@order, params[:payment_method_id],  'payment')
@@ -109,7 +109,7 @@ CheckoutController.class_eval do
     redirect_to edit_order_url(@order)
   end
 
-  def paypal_finish
+  def paypal_finish 
     load_order
 
     opts = { :token => params[:token], :payer_id => params[:PayerID] }.merge all_opts(@order, params[:payment_method_id], 'payment' )
@@ -160,7 +160,7 @@ CheckoutController.class_eval do
       redirect_to completion_route
 
     else
-      payment.fail!
+      payment.failure!
       order_params = {}
       gateway_error(ppx_auth_response)
 
@@ -178,13 +178,21 @@ CheckoutController.class_eval do
     payment.log_entries.create(:details => response.to_yaml)
   end
 
-  def redirect_to_paypal_express_form_if_needed
+  def redirect_to_paypal_express_form_if_needed    
     return unless (params[:state] == "payment")
     return unless params[:order][:payments_attributes]
     if params[:order][:coupon_code]
       @order.update_attributes(object_params)
-      @order.process_coupon_code
-    end
+      #@order.process_coupon_code # old code pre 0.70.x    
+      
+      # as in spree_promo 0.70.1 orders_controller_decorator.rb :  
+      if @order.coupon_code.present?
+        fire_event('spree.checkout.coupon_code_added', :coupon_code => @order.coupon_code)
+      end
+    end 
+    @order.line_items = @order.line_items.select {|li| li.quantity > 0 }
+    fire_event('spree.order.contents_changed')   
+    
     load_order
     payment_method = PaymentMethod.find(params[:order][:payments_attributes].first[:payment_method_id])
 
