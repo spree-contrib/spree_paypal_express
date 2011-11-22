@@ -23,7 +23,10 @@ MUST confirm the order on the Spree site before the payment is authorized / capt
 Versions
 ========
 
-The master branch of this repo is currently unstable due to changes in Spree itself and is being actively worked on.
+NOTE: The master branch of this repo is currently unstable due to changes in Spree itself and is being actively worked on.
+
+To determine the correct version of this extension, please refer to the Versionfile.
+
 
 The legacy 0.11.x version of this extension is available in the [0-11-x](https://github.com/spree/spree_paypal_express/tree/0-11-x) branch.
 
