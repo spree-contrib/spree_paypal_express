@@ -124,7 +124,7 @@ module Spree
       payment = @order.payments.create(
         :amount => ppx_auth_response.params["gross_amount"].to_f,
         :source => paypal_account,
-        :source_type => 'PaypalAccount',
+        :source_type => 'Spree::PaypalAccount',
         :payment_method_id => params[:payment_method_id],
         :response_code => ppx_auth_response.params["ack"],
         :avs_response => ppx_auth_response.avs_result["code"])
@@ -252,9 +252,9 @@ module Spree
         credits_total = credits.map {|i| i[:amount] * i[:quantity] }.sum
       end
 
-      opts = { #:return_url        => request.protocol + request.host_with_port + "/orders/#{order.number}/checkout/paypal_confirm?payment_method_id=#{payment_method}",
-               :return_url        => "http://"  + request.host_with_port + "/orders/#{order.number}/checkout/paypal_confirm?payment_method_id=#{payment_method}",
-               :cancel_return_url => "http://"  + request.host_with_port + "/orders/#{order.number}/edit",
+      opts = { #:return_url        => request.protocol + request.host_with_port + "/spree/orders/#{order.number}/checkout/paypal_confirm?payment_method_id=#{payment_method}",
+               :return_url        => "http://"  + request.host_with_port + "/spree/orders/#{order.number}/checkout/paypal_confirm?payment_method_id=#{payment_method}",
+               :cancel_return_url => "http://"  + request.host_with_port + "/spree/orders/#{order.number}/edit",
                :order_id          => order.number,
                :custom            => order.number,
                :items             => items,
@@ -269,7 +269,7 @@ module Spree
       if stage == "checkout"
         opts[:handling] = 0
 
-        opts[:callback_url] = "http://"  + request.host_with_port + "/paypal_express_callbacks/#{order.number}"
+        opts[:callback_url] = "http://"  + request.host_with_port + "/spree/paypal_express_callbacks/#{order.number}"
         opts[:callback_timeout] = 3
       elsif stage == "payment"
         #hack to add float rounding difference in as handling fee - prevents PayPal from rejecting orders
