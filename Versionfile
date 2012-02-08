@@ -1,3 +1,3 @@
-"0.70.x" => { :branch => "master" }
+"0.70.x" => { :branch => "fix-process_coupon_code-#16" }
 "0.60.x" => { :ref => "073f2f814dd8f3ad2e66ddde2c7079d8c76e4d27" }
 "0.50.x" => { :ref => "39a3b00602d591e5c27bf13941aa5c13e4b95579" }
