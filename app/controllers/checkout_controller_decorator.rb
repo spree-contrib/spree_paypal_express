@@ -185,13 +185,14 @@ CheckoutController.class_eval do
       @order.update_attributes(object_params)
       #@order.process_coupon_code # old code pre 0.70.x    
       
-      # as in spree_promo 0.70.1 orders_controller_decorator.rb :  
+      # as in spree_promo 0.70 orders_controller_decorator.rb :  
       if @order.coupon_code.present?
         fire_event('spree.checkout.coupon_code_added', :coupon_code => @order.coupon_code)
       end
     end 
     @order.line_items = @order.line_items.select {|li| li.quantity > 0 }
     fire_event('spree.order.contents_changed')   
+    ### end patch for 0.70
     
     load_order
     payment_method = PaymentMethod.find(params[:order][:payments_attributes].first[:payment_method_id])
