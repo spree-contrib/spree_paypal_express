@@ -1,0 +1,1 @@
+require 'active_merchant/billing/gateways/paypal_express'
