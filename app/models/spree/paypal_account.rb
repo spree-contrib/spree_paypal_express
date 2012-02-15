@@ -93,7 +93,7 @@ class Spree::PaypalAccount < ActiveRecord::Base
   def gateway_error(text)
     msg = "#{I18n.t('gateway_error')} ... #{text}"
     logger.error(msg)
-    raise Spree::GatewayError.new(msg)
+    raise Spree::Core::GatewayError.new(msg)
   end
 
   private
