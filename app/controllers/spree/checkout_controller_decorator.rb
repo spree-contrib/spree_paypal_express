@@ -124,7 +124,7 @@ module Spree
       payment = @order.payments.create(
         :amount => ppx_auth_response.params["gross_amount"].to_f,
         :source => paypal_account,
-        :source_type => 'PaypalAccount',
+        :source_type => 'Spree::PaypalAccount',
         :payment_method_id => params[:payment_method_id],
         :response_code => ppx_auth_response.params["ack"],
         :avs_response => ppx_auth_response.avs_result["code"])
