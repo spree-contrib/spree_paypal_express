@@ -252,9 +252,8 @@ module Spree
         credits_total = credits.map {|i| i[:amount] * i[:quantity] }.sum
       end
 
-      opts = { #:return_url        => request.protocol + request.host_with_port + "/orders/#{order.number}/checkout/paypal_confirm?payment_method_id=#{payment_method}",
-               :return_url        => "http://"  + request.host_with_port + "/orders/#{order.number}/checkout/paypal_confirm?payment_method_id=#{payment_method}",
-               :cancel_return_url => "http://"  + request.host_with_port + "/orders/#{order.number}/edit",
+      opts = { :return_url        =>  spree.root_url + "orders/#{order.number}/checkout/paypal_confirm?payment_method_id=#{payment_method}",
+               :cancel_return_url =>  spree.root_url + "orders/#{order.number}/edit",
                :order_id          => order.number,
                :custom            => order.number,
                :items             => items,
@@ -269,7 +268,7 @@ module Spree
       if stage == "checkout"
         opts[:handling] = 0
 
-        opts[:callback_url] = "http://"  + request.host_with_port + "/paypal_express_callbacks/#{order.number}"
+        opts[:callback_url] = spree_root_url + "paypal_express_callbacks/#{order.number}"
         opts[:callback_timeout] = 3
       elsif stage == "payment"
         #hack to add float rounding difference in as handling fee - prevents PayPal from rejecting orders
