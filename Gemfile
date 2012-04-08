@@ -23,11 +23,4 @@ group :cucumber do
 end
 
 gem 'awesome_print'
-
-# if RUBY_VERSION < "1.9"
-#   gem "ruby-debug"
-# else
-#   gem "ruby-debug19"
-# end
-
 gem 'debugger'

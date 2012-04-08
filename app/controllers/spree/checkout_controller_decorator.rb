@@ -251,8 +251,8 @@ module Spree
         credits_total = credits.map {|i| i[:amount] * i[:quantity] }.sum
       end
 
-      opts = { :return_url        =>  spree.root_url + "orders/#{order.number}/checkout/paypal_confirm?payment_method_id=#{payment_method}",
-               :cancel_return_url =>  spree.root_url + "orders/#{order.number}/edit",
+      opts = { :return_url        => paypal_confirm_order_checkout_url(order, :payment_method_id => payment_method),
+               :cancel_return_url => edit_order_url(order),
                :order_id          => order.number,
                :custom            => order.number,
                :items             => items,
