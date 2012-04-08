@@ -2,3 +2,4 @@
 spec/test_app
 spec/dummy
 .rvmrc
+.bundle

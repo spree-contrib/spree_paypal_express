@@ -4,8 +4,13 @@ ENV["RAILS_ENV"] ||= 'test'
 require File.expand_path("../dummy/config/environment", __FILE__)
 require 'rspec/rails'
 
+# Requires supporting ruby files with custom matchers and macros, etc,
+# in spec/support/ and its subdirectories.
+Dir[File.join(File.dirname(__FILE__), "support/**/*.rb")].each {|f| require f }
+
 #include spree's factories
 require 'spree/core/testing_support/factories'
+require 'spree/core/testing_support/fixtures'
 
 # include local factories
 Dir["#{File.dirname(__FILE__)}/factories/**/*.rb"].each do |f|
@@ -29,6 +34,7 @@ RSpec.configure do |config|
   # examples within a transaction, comment the following line or assign false
   # instead of true.
   config.use_transactional_fixtures = true
+  config.include Spree::UrlHelpers
 end
 
 Spree::Zone.class_eval do
@@ -37,4 +43,12 @@ Spree::Zone.class_eval do
   end
 end
 
-@configuration ||= Spree::AppConfiguration.find_or_create_by_name("Default configuration")
+# class ActionController::TestCase
+#   module Behavior
+#     def process_with_default_host(action, parameters = nil, session = nil, flash = nil, http_method = 'GET')
+#       parameters = { :host => 'example.com' }.merge( parameters || {} )
+#       process_without_default_host(action, parameters, session, flash, http_method)
+#     end
+#     alias_method_chain :process, :default_host
+#   end
+# end

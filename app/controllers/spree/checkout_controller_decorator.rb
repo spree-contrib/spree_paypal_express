@@ -85,7 +85,6 @@ module Spree
           else
             order_ship_address.state_name = ship_address["state"]
           end
-
           order_ship_address.save!
 
           @order.ship_address = order_ship_address
@@ -94,7 +93,7 @@ module Spree
         @order.save
 
         if payment_method.preferred_review
-          render 'shared/paypal_express_confirm'
+          render 'spree/shared/paypal_express_confirm'
         else
           paypal_finish
         end
@@ -158,7 +157,7 @@ module Spree
         redirect_to completion_route
 
       else
-        payment.fail!
+        payment.failure!
         order_params = {}
         gateway_error(ppx_auth_response)
 
