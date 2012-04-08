@@ -21,6 +21,3 @@ group :cucumber do
   gem 'faker'
   gem 'launchy'
 end
-
-gem 'awesome_print'
-gem 'debugger'
