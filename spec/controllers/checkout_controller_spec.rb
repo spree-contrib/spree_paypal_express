@@ -256,7 +256,7 @@ module Spree
         opts[:shipping].should == (order.ship_total * 100).to_i
 
         opts[:return_url].should == spree.paypal_confirm_order_checkout_url(order, :payment_method_id => paypal_gateway.id, :host => "test.host")
-        opts[:cancel_return_url].should == spree.edit_order_url(order, :host => "test.host")
+        opts[:cancel_return_url].should == spree.edit_order_checkout_url(order, :state => 'payment', :host => "test.host")
 
         opts[:items].size.should > 0
         opts[:items].size.should == order.line_items.count
