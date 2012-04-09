@@ -6,7 +6,7 @@ module Spree
     let(:order) { Factory(:ppx_order_with_totals, :state => "payment") }
     let(:order_total) { (order.total * 100).to_i }
     let(:gateway_provider) { mock(ActiveMerchant::Billing::PaypalExpressGateway) }
-    let(:paypal_gateway) { mock(BillingIntegration::PaypalExpress, :id => 123, :preferred_review => false, :preferred_no_shipping => true, :provider => gateway_provider, :preferred_currency => "US"
+    let(:paypal_gateway) { mock(BillingIntegration::PaypalExpress, :id => 123, :preferred_review => false, :preferred_no_shipping => true, :provider => gateway_provider, :preferred_currency => "US", :preferred_allow_guest_checkout => true
     ) }
 
     let(:details_for_response) { mock(ActiveMerchant::Billing::PaypalExpressResponse, :success? => true,
@@ -288,6 +288,15 @@ module Spree
       end
 
 
+    end
+
+    describe "#paypal_site_opts" do
+      it "returns opts to allow guest checkout" do
+        controller.should_receive(:payment_method).at_least(1).and_return(paypal_gateway)
+
+        opts = controller.send(:paypal_site_opts)
+        opts[:allow_guest_checkout].should be_true
+      end
     end
   end
 end

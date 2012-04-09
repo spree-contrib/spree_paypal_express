@@ -226,7 +226,7 @@ module Spree
 
     # hook to override paypal site options
     def paypal_site_opts
-      {:currency => payment_method.preferred_currency}
+      {:currency => payment_method.preferred_currency, :allow_guest_checkout => payment_method.preferred_allow_guest_checkout }
     end
 
     def order_opts(order, payment_method, stage)
@@ -362,7 +362,7 @@ module Spree
 
     # create the gateway from the supplied options
     def payment_method
-      Spree::PaymentMethod.find(params[:payment_method_id])
+      @payment_method ||= Spree::PaymentMethod.find(params[:payment_method_id])
     end
 
     def paypal_gateway
