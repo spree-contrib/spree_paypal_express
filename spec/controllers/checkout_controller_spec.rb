@@ -242,6 +242,17 @@ module Spree
 
     end
 
+    context "#fixed_opts" do
+
+      it "returns hash containing basic settings" do
+        I18n.locale = :fr
+        opts = controller.send(:fixed_opts)
+        opts[:header_image].should == "http://demo.spreecommerce.com/assets/admin/bg/spree_50.png"
+        opts[:locale].should == "fr"
+      end
+
+    end
+
     context "order_opts" do
 
       it "should return hash containing basic order details" do

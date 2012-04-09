@@ -171,6 +171,10 @@ module Spree
 
     private
 
+    def asset_url(_path)
+      URI::HTTP.build(:path => ActionController::Base.helpers.asset_path(_path), :host => Spree::Config[:site_url]).to_s
+    end
+
     def record_log(payment, response)
       payment.log_entries.create(:details => response.to_yaml)
     end
@@ -197,15 +201,16 @@ module Spree
         user_action = Spree::PaypalExpress::Config[:paypal_express_local_confirm] == "t" ? "continue" : "commit"
       end
 
+
       { :description             => "Goods from #{Spree::Config[:site_name]}", # site details...
 
         #:page_style             => "foobar", # merchant account can set named config
-        :header_image            => "https://#{Spree::Config[:site_url]}#{Spree::Config[:logo]}",
+        :header_image            => asset_url(Spree::Config[:logo]),
         :background_color        => "ffffff",  # must be hex only, six chars
         :header_background_color => "ffffff",
         :header_border_color     => "ffffff",
         :allow_note              => true,
-        :locale                  => Spree::Config[:default_locale],
+        :locale                  => user_locale,
         :req_confirm_shipping    => false,   # for security, might make an option later
         :user_action             => user_action
 
@@ -213,6 +218,10 @@ module Spree
         # they've not been tested and may trigger some paypal bugs, eg not showing order
         # see http://www.pdncommunity.com/t5/PayPal-Developer-Blog/Displaying-Order-Details-in-Express-Checkout/bc-p/92902#C851
       }
+    end
+
+    def user_locale
+      I18n.locale.to_s
     end
 
     # hook to override paypal site options
