@@ -3,3 +3,4 @@ spec/test_app
 spec/dummy
 .rvmrc
 .bundle
+Gemfile.lock
