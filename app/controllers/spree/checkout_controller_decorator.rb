@@ -85,7 +85,6 @@ module Spree
           else
             order_ship_address.state_name = ship_address["state"]
           end
-
           order_ship_address.save!
 
           @order.ship_address = order_ship_address
@@ -94,7 +93,7 @@ module Spree
         @order.save
 
         if payment_method.preferred_review
-          render 'shared/paypal_express_confirm'
+          render 'spree/shared/paypal_express_confirm'
         else
           paypal_finish
         end
@@ -158,7 +157,7 @@ module Spree
         redirect_to completion_route
 
       else
-        payment.fail!
+        payment.failure!
         order_params = {}
         gateway_error(ppx_auth_response)
 
@@ -171,6 +170,10 @@ module Spree
     end
 
     private
+
+    def asset_url(_path)
+      URI::HTTP.build(:path => ActionController::Base.helpers.asset_path(_path), :host => Spree::Config[:site_url]).to_s
+    end
 
     def record_log(payment, response)
       payment.log_entries.create(:details => response.to_yaml)
@@ -198,15 +201,16 @@ module Spree
         user_action = Spree::PaypalExpress::Config[:paypal_express_local_confirm] == "t" ? "continue" : "commit"
       end
 
+
       { :description             => "Goods from #{Spree::Config[:site_name]}", # site details...
 
         #:page_style             => "foobar", # merchant account can set named config
-        :header_image            => "https://#{Spree::Config[:site_url]}#{Spree::Config[:logo]}",
+        :header_image            => asset_url(Spree::Config[:logo]),
         :background_color        => "ffffff",  # must be hex only, six chars
         :header_background_color => "ffffff",
         :header_border_color     => "ffffff",
         :allow_note              => true,
-        :locale                  => Spree::Config[:default_locale],
+        :locale                  => user_locale,
         :req_confirm_shipping    => false,   # for security, might make an option later
         :user_action             => user_action
 
@@ -216,9 +220,13 @@ module Spree
       }
     end
 
+    def user_locale
+      I18n.locale.to_s
+    end
+
     # hook to override paypal site options
     def paypal_site_opts
-      {:currency => payment_method.preferred_currency}
+      {:currency => payment_method.preferred_currency, :allow_guest_checkout => payment_method.preferred_allow_guest_checkout }
     end
 
     def order_opts(order, payment_method, stage)
@@ -252,14 +260,14 @@ module Spree
         credits_total = credits.map {|i| i[:amount] * i[:quantity] }.sum
       end
 
-      opts = { :return_url        =>  spree.root_url + "orders/#{order.number}/checkout/paypal_confirm?payment_method_id=#{payment_method}",
-               :cancel_return_url =>  spree.root_url + "orders/#{order.number}/edit",
+      opts = { :return_url        => paypal_confirm_order_checkout_url(order, :payment_method_id => payment_method),
+               :cancel_return_url => edit_order_checkout_url(order, :state => :payment),
                :order_id          => order.number,
                :custom            => order.number,
                :items             => items,
                :subtotal          => ((order.item_total * 100) + credits_total).to_i,
-               :tax               => ((order.adjustments.map { |a| a.amount if ( a.source_type == 'Order' && a.label == 'Tax') }.compact.sum) * 100 ).to_i,
-               :shipping          => ((order.adjustments.map { |a| a.amount if a.source_type == 'Shipment' }.compact.sum) * 100 ).to_i,
+               :tax               => ((order.adjustments.map { |a| a.amount if ( a.source_type == 'Spree::Order' && a.label == 'Tax') }.compact.sum) * 100 ).to_i,
+               :shipping          => ((order.adjustments.map { |a| a.amount if a.source_type == 'Spree::Shipment' }.compact.sum) * 100 ).to_i,
                :money             => (order.total * 100 ).to_i }
 
         # add correct tax amount by subtracting subtotal and shipping otherwise tax = 0 -> need to check adjustments.map
@@ -354,7 +362,7 @@ module Spree
 
     # create the gateway from the supplied options
     def payment_method
-      Spree::PaymentMethod.find(params[:payment_method_id])
+      @payment_method ||= Spree::PaymentMethod.find(params[:payment_method_id])
     end
 
     def paypal_gateway
