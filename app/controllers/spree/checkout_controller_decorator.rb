@@ -235,7 +235,7 @@ module Spree
           :depth       => item.variant.weight }
         end
 
-      credits = order.adjustments.map do |credit|
+      credits = order.adjustments.eligible.map do |credit|
         if credit.amount < 0.00
           { :name        => credit.label,
             :description => credit.label,
@@ -258,12 +258,9 @@ module Spree
                :custom            => order.number,
                :items             => items,
                :subtotal          => ((order.item_total * 100) + credits_total).to_i,
-               :tax               => ((order.adjustments.map { |a| a.amount if ( a.source_type == 'Order' && a.label == 'Tax') }.compact.sum) * 100 ).to_i,
-               :shipping          => ((order.adjustments.map { |a| a.amount if a.source_type == 'Shipment' }.compact.sum) * 100 ).to_i,
+               :tax               => (order.tax_total*100).to_i,
+               :shipping          => (order.ship_total*100).to_i,
                :money             => (order.total * 100 ).to_i }
-
-        # add correct tax amount by subtracting subtotal and shipping otherwise tax = 0 -> need to check adjustments.map
-        opts[:tax] = (order.total*100).to_i - opts.slice(:subtotal, :shipping).values.sum
 
       if stage == "checkout"
         opts[:handling] = 0
