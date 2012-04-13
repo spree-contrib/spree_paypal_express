@@ -7,5 +7,5 @@ Factory.define(:ppx_order) do |record|
 end
 
 Factory.define :ppx_order_with_totals, :parent => :order do |f|
-  f.after_create { |order| Factory(:line_item, :order => order) }
+  f.after_create { |order| Factory(:line_item, :order => order, :price => 10) and order.line_items.reload }
 end

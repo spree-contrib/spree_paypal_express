@@ -11,11 +11,6 @@ group :test do
   gem 'simplecov'
   gem 'shoulda'
   gem 'faker'
-  if RUBY_VERSION < "1.9"
-    gem "ruby-debug"
-  else
-    gem "ruby-debug19"
-  end
 end
 
 group :cucumber do
@@ -25,10 +20,4 @@ group :cucumber do
   gem 'capybara'
   gem 'faker'
   gem 'launchy'
-
-  if RUBY_VERSION < "1.9"
-    gem "ruby-debug"
-  else
-    gem "ruby-debug19"
-  end
 end
