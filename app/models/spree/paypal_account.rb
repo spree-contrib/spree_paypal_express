@@ -25,7 +25,7 @@ class Spree::PaypalAccount < ActiveRecord::Base
   def credit(payment, amount=nil)
     authorization = find_capture(payment)
 
-    amount = payment.credit_allowed >= payment.order.outstanding_balance.abs ? payment.order.outstanding_balance : payment.credit_allowed
+    amount = abs(payment.credit_allowed >= payment.order.outstanding_balance.abs ? payment.order.outstanding_balance : payment.credit_allowed)
 
     ppx_response = payment.payment_method.provider.credit(amount.nil? ? amount_in_cents(amount) : amount_in_cents(amount), authorization.params['transaction_id'])
 
