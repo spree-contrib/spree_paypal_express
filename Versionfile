@@ -1,4 +1,5 @@
-"1.0.0"  => { :branch => "master" }
+"1.1.0"  => { :branch => "1-1-stable" }
+"1.0.0"  => { :branch => "1-0-stable" }
 "0.70.x" => { :ref => "bea1aa48e0089083546bec4b19565a40e9a50a20" }
 "0.60.x" => { :ref => "073f2f814dd8f3ad2e66ddde2c7079d8c76e4d27" }
 "0.50.x" => { :ref => "39a3b00602d591e5c27bf13941aa5c13e4b95579" }
