@@ -195,15 +195,22 @@ module Spree
       else
         user_action = Spree::PaypalExpress::Config[:paypal_express_local_confirm] == "t" ? "continue" : "commit"
       end
+      
+      #asset_url doesn't like Spree::Config[:logo] being an absolute url
+      #if statement didn't work within hash
+      if URI.parse(Spree::Config[:logo]).absolute?
+          chosen_image = Spree::Config[:logo]
+      else
+          chosen_image = asset_url(Spree::Config[:logo])
+      end
 
 
       { :description             => "Goods from #{Spree::Config[:site_name]}", # site details...
-
         #:page_style             => "foobar", # merchant account can set named config
-        :header_image            => asset_url(Spree::Config[:logo]),
         :background_color        => "ffffff",  # must be hex only, six chars
         :header_background_color => "ffffff",
         :header_border_color     => "ffffff",
+	:header_image		 => chosen_image,
         :allow_note              => true,
         :locale                  => user_locale,
         :req_confirm_shipping    => false,   # for security, might make an option later
