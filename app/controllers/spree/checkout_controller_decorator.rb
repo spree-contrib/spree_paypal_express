@@ -90,11 +90,13 @@ module Spree
           @order.ship_address = order_ship_address
           @order.bill_address ||= order_ship_address
         end
-        @order.save
 
         if payment_method.preferred_review
+          @order.state = "confirm"
+          @order.save
           render 'spree/shared/paypal_express_confirm'
         else
+          @order.save
           paypal_finish
         end
 
@@ -189,7 +191,7 @@ module Spree
           fire_event('spree.checkout.coupon_code_added', :coupon_code => @order.coupon_code)
         end
       end
-      
+
       load_order
       payment_method = Spree::PaymentMethod.find(params[:order][:payments_attributes].first[:payment_method_id])
 
