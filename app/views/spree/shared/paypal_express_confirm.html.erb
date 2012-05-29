@@ -3,7 +3,7 @@
   <%= raw t("order_not_yet_placed") %>
 </p>
 
-<%= render :partial => 'shared/order_details', :locals => {:order => @order} -%>
+<%= render :partial => 'spree/shared/order_details', :locals => {:order => @order} -%>
 <div class="form-buttons">
   <%= button_to t('place_order'), paypal_finish_order_checkout_url(@order, {:token => params[:token] , :PayerID => params[:PayerID], :payment_method_id =>
   params[:payment_method_id] } ), :class => "button primary" %>
