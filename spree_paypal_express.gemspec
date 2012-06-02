@@ -14,5 +14,16 @@ Gem::Specification.new do |s|
   s.has_rdoc      = false
 
   s.add_dependency('spree_core', '>=1.0.0')
-  s.add_development_dependency('rspec-rails')
+  s.add_dependency('spree_auth', '>=1.0.0')
+  s.add_development_dependency 'capybara', '1.0.1'
+  s.add_development_dependency 'ffaker'
+  s.add_development_dependency 'rspec-rails',  '~> 2.9'
+  s.add_development_dependency 'sqlite3'
+  s.add_development_dependency 'factory_girl_rails', '~> 1.5.0'
+  s.add_development_dependency 'launchy'
+  s.add_development_dependency 'debugger'
+  s.add_development_dependency 'sass-rails'
+  s.add_development_dependency 'coffee-rails'
+  s.add_development_dependency 'spree_sample', "~> 1.1.0"
+  s.add_development_dependency 'debugger'
 end

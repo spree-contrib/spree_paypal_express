@@ -18,6 +18,8 @@ Dir["#{File.dirname(__FILE__)}/factories/**/*.rb"].each do |f|
   require fp
 end
 
+require 'ffaker'
+
 RSpec.configure do |config|
   # == Mock Framework
   #

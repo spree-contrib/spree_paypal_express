@@ -2,8 +2,10 @@ require File.dirname(__FILE__) + '/../spec_helper'
 
 module Spree
   describe CheckoutController do
+    render_views
     let(:token) { "EC-2OPN7UJGFWK9OYFV" }
-    let(:order) { Factory(:ppx_order_with_totals, :state => "payment") }
+    let(:order) { Factory(:ppx_order_with_totals, :state => "payment", :shipping_method => shipping_method) }
+    let(:shipping_method) { FactoryGirl.create(:shipping_method, :zone => Spree::Zone.find_by_name('North America'))  }
     let(:order_total) { (order.total * 100).to_i }
     let(:gateway_provider) { mock(ActiveMerchant::Billing::PaypalExpressGateway) }
     let(:paypal_gateway) { mock(BillingIntegration::PaypalExpress, :id => 123, :preferred_review => false, :preferred_no_shipping => true, :provider => gateway_provider, :preferred_currency => "US", :preferred_allow_guest_checkout => true
@@ -73,7 +75,10 @@ module Spree
     end
 
     context "paypal_confirm" do
-      before { PaymentMethod.should_receive(:find).at_least(1).with("123").and_return(paypal_gateway) }
+      before do
+        PaymentMethod.should_receive(:find).at_least(1).with("123").and_return(paypal_gateway)
+        order.stub!(:payment_method).and_return paypal_gateway
+      end
 
       context "with auto_capture and no review" do
         before do
@@ -92,13 +97,17 @@ module Spree
 
           order.reload
           order.state.should == "complete"
+          order.completed_at.should_not be_nil
           order.payments.size.should == 1
           order.payment_state.should == "paid"
         end
       end
 
       context "with review" do
-        before { paypal_gateway.stub(:preferred_review => true) }
+        before do
+           paypal_gateway.stub(:preferred_review => true, :payment_profiles_supported? => true)
+           order.stub_chain(:payment, :payment_method, :payment_profiles_supported? => true)
+         end
 
         it "should render review" do
           paypal_gateway.provider.should_receive(:details_for).with(token).and_return(details_for_response)
@@ -106,7 +115,15 @@ module Spree
           get :paypal_confirm, {:order_id => order.number, :payment_method_id => "123", :token => token, :PayerID => "FWRVKNRRZ3WUC" }
 
           response.should render_template("shared/paypal_express_confirm")
+          order.state.should == "confirm"
+        end
 
+        it "order state should not change on multiple call" do
+          paypal_gateway.provider.should_receive(:details_for).twice.with(token).and_return(details_for_response)
+
+          get :paypal_confirm, {:order_id => order.number, :payment_method_id => "123", :token => token, :PayerID => "FWRVKNRRZ3WUC" }
+          get :paypal_confirm, {:order_id => order.number, :payment_method_id => "123", :token => token, :PayerID => "FWRVKNRRZ3WUC" }
+          order.state.should == "confirm"
         end
       end
 
@@ -114,7 +131,8 @@ module Spree
         before do
           paypal_gateway.stub(:preferred_review => true)
           paypal_gateway.stub(:preferred_no_shipping => false)
-
+          paypal_gateway.stub(:payment_profiles_supported? => true)
+          order.stub_chain(:payment, :payment_method, :payment_profiles_supported? => true)
           details_for_response.stub(:params => details_for_response.params.merge({'first_name' => 'Dr.', 'last_name' => 'Evil'}),
             :address => {'address1' => 'Apt. 187', 'address2'=> 'Some Str.', 'city' => 'Chevy Chase', 'country' => 'US', 'zip' => '20815', 'state' => 'MD' })
 
@@ -126,6 +144,7 @@ module Spree
           get :paypal_confirm, {:order_id => order.number, :payment_method_id => "123", :token => token, :PayerID => "FWRVKNRRZ3WUC" }
 
           order.ship_address.address1.should == "Apt. 187"
+          order.state.should == "confirm"
           response.should render_template("shared/paypal_express_confirm")
         end
       end

@@ -90,9 +90,11 @@ module Spree
           @order.ship_address = order_ship_address
           @order.bill_address ||= order_ship_address
         end
+        @order.state = "payment"
         @order.save
 
         if payment_method.preferred_review
+          @order.next
           render 'spree/shared/paypal_express_confirm'
         else
           paypal_finish
@@ -145,8 +147,15 @@ module Spree
           Rails.logger.error ppx_auth_response.to_yaml
         end
 
-        @order.update_attribute(:state, "complete")
+        @order.update_attributes({:state => "complete", :completed_at => Time.now}, :without_protection => true)
+
         state_callback(:after) # So that after_complete is called, setting session[:order_id] to nil
+
+        # Since we dont rely on state machine callback, we just explicitly call this method for spree_store_credits
+        if @order.respond_to?(:consume_users_credit, true)
+          @order.send(:consume_users_credit)
+        end
+
         @order.finalize!
         flash[:notice] = I18n.t(:order_processed_successfully)
         redirect_to completion_route
@@ -178,18 +187,17 @@ module Spree
       return unless (params[:state] == "payment")
       return unless params[:order][:payments_attributes]
 
-      if params[:order][:coupon_code]
-        @order.update_attributes(object_params)
-        if @order.coupon_code.present?
+      if @order.update_attributes(object_params)
+        if params[:order][:coupon_code] and !params[:order][:coupon_code].blank? and @order.coupon_code.present?
           fire_event('spree.checkout.coupon_code_added', :coupon_code => @order.coupon_code)
         end
       end
-      
+
       load_order
       payment_method = Spree::PaymentMethod.find(params[:order][:payments_attributes].first[:payment_method_id])
 
       if payment_method.kind_of?(Spree::BillingIntegration::PaypalExpress) || payment_method.kind_of?(Spree::BillingIntegration::PaypalExpressUk)
-        redirect_to paypal_payment_order_checkout_url(@order, :payment_method_id => payment_method)
+        redirect_to(paypal_payment_order_checkout_url(@order, :payment_method_id => payment_method.id)) and return
       end
     end
 
@@ -199,7 +207,7 @@ module Spree
       else
         user_action = Spree::PaypalExpress::Config[:paypal_express_local_confirm] == "t" ? "continue" : "commit"
       end
-      
+
       #asset_url doesn't like Spree::Config[:logo] being an absolute url
       #if statement didn't work within hash
       if URI.parse(Spree::Config[:logo]).absolute?
@@ -214,7 +222,7 @@ module Spree
         :background_color        => "ffffff",  # must be hex only, six chars
         :header_background_color => "ffffff",
         :header_border_color     => "ffffff",
-	:header_image		 => chosen_image,
+  :header_image    => chosen_image,
         :allow_note              => true,
         :locale                  => user_locale,
         :req_confirm_shipping    => false,   # for security, might make an option later
