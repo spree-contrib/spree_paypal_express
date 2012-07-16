@@ -184,7 +184,7 @@ module Spree
           fire_event('spree.checkout.coupon_code_added', :coupon_code => @order.coupon_code)
         end
       end
-      
+
       load_order
       payment_method = Spree::PaymentMethod.find(params[:order][:payments_attributes].first[:payment_method_id])
 
@@ -199,7 +199,7 @@ module Spree
       else
         user_action = Spree::PaypalExpress::Config[:paypal_express_local_confirm] == "t" ? "continue" : "commit"
       end
-      
+
       #asset_url doesn't like Spree::Config[:logo] being an absolute url
       #if statement didn't work within hash
       if URI.parse(Spree::Config[:logo]).absolute?
@@ -240,7 +240,7 @@ module Spree
         price = (item.price * 100).to_i # convert for gateway
         { :name        => item.variant.product.name,
           :description => (item.variant.product.description[0..120] if item.variant.product.description),
-          :sku         => item.variant.sku,
+          :number      => item.variant.sku,
           :quantity    => item.quantity,
           :amount      => price,
           :weight      => item.variant.weight,
