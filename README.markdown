@@ -37,7 +37,7 @@ Installation
 
 3. Copy & run migrations
 
-    bundle exec rails g spree_social:install
+    bundle exec rails g spree_paypal_express:install
 
 Versions
 ========
