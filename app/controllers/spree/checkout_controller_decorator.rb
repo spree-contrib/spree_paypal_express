@@ -248,7 +248,7 @@ module Spree
       items = order.line_items.map do |item|
         price = (item.price * 100).to_i # convert for gateway
         { :name        => item.variant.product.name,
-          :description => (item.variant.product.description[0..120] if item.variant.product.description),
+          :description => (item.variant.product.description[0..120].gsub(/<\/?[^>]*>/, "") if item.variant.product.description),
           :number      => item.variant.sku,
           :quantity    => item.quantity,
           :amount      => price,
