@@ -247,15 +247,10 @@ module Spree
     def order_opts(order, payment_method, stage)
       items = order.line_items.map do |item|
         price = (item.price * 100).to_i # convert for gateway
-        { :name        => item.variant.product.name,
-          :description => (item.variant.product.description[0..120].gsub(/<\/?[^>]*>/, "") if item.variant.product.description),
+        { :name        => item.variant.product.name.gsub(/<\/?[^>]*>/, ""),
           :number      => item.variant.sku,
           :quantity    => item.quantity,
-          :amount      => price,
-          :weight      => item.variant.weight,
-          :height      => item.variant.height,
-          :width       => item.variant.width,
-          :depth       => item.variant.weight }
+          :amount      => price }
         end
 
       credits = order.adjustments.eligible.map do |credit|
