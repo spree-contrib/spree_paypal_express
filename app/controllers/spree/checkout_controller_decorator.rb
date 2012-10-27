@@ -329,7 +329,7 @@ module Spree
       end
 
       # suggest current user's email or any email stored in the order
-      opts[:email] = current_user ? current_user.email : order.email
+      opts[:email] = spree_current_user ? spree_current_user.email : order.email
 
       opts
     end
