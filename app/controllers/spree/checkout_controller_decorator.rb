@@ -29,7 +29,9 @@ module Spree
     def paypal_payment
       load_order
       opts = all_opts(@order,params[:payment_method_id], 'payment')
-      opts.merge!(address_options(@order))
+      unless payment_method.preferred_cart_checkout
+        opts.merge!(address_options(@order))
+      end
       @gateway = paypal_gateway
 
       if Spree::Config[:auto_capture]
