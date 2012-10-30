@@ -1,6 +1,6 @@
 <!--
   insert_bottom '.payment-info'
-  original '9d4ef160bd508a47f906d7419c33cfc7eefc501d'
+  original 'cd012ef486088f2543371329dde5d4f8f3d4191b' 
 -->
 <% if order.payment && order.payment.source.class.to_s == 'Spree::PaypalAccount' %>
   <span class="cc-type">
