@@ -13,7 +13,7 @@ This extension allows the store to use PayPal Express from two locations:
   sent to the PayPal review page (along with detailed order information).
 
   
-  2. Cart Checkout - (For this to work the "Checkout From Cart" needs to be checked in the admin payment methods options.) Presents the PayPal checkout button on the users Cart page and redirects the user to complete
+  2. Cart Checkout - (For this to work the "Checkout From Cart" needs to be checked in the admin > payment methods options.) Presents the PayPal checkout button on the users Cart page and redirects the user to complete
   all shipping / addressing information on PaypPal's site. This also supports PayPal's Instant Update feature to retrieve shipping options live from 
   Spree when the user selects / changes their shipping address on PayPal's site. (Instant Update not yet tested)
 
