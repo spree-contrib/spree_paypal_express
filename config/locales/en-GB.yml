@@ -12,6 +12,7 @@ en-GB:
   result: Result
   review: Review
   no_shipping: No Shipping
+  cart_checkout: Checkout From Cart
   paypal_account: PayPal Account
   payer_id: Payer ID
   payer_country: Country

@@ -29,7 +29,9 @@ module Spree
     def paypal_payment
       load_order
       opts = all_opts(@order,params[:payment_method_id], 'payment')
-      opts.merge!(address_options(@order))
+      unless payment_method.preferred_cart_checkout
+        opts.merge!(address_options(@order))
+      end
       @gateway = paypal_gateway
 
       if Spree::Config[:auto_capture]
@@ -90,6 +92,11 @@ module Spree
 
           @order.ship_address = order_ship_address
           @order.bill_address ||= order_ship_address
+
+          if payment_method.preferred_cart_checkout
+            add_shipping_charge
+          end
+
         end
         @order.state = "payment"
         @order.save
@@ -381,5 +388,13 @@ module Spree
       payment_method.provider
     end
 
+    def add_shipping_charge
+      if @order.shipping_method_id.blank? && @order.rate_hash.present?
+        @order.shipping_method_id = @order.rate_hash.first[:id]
+      end
+      @order.shipments.each { |s| s.destroy unless s.shipping_method.available_to_order?(@order) }
+      @order.create_shipment!
+      @order.update!
+    end
   end
 end
