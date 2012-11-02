@@ -161,7 +161,7 @@ module Spree
 
         # Since we dont rely on state machine callback, we just explicitly call this method for spree_store_credits
         if @order.respond_to?(:consume_users_credit, true)
-        #  @order.send(:consume_users_credit)
+          @order.send(:consume_users_credit)
         end
 
         @order.finalize!
