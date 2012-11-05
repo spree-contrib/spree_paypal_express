@@ -190,7 +190,13 @@ module Spree
 
       if @order.update_attributes(object_params)
         if params[:order][:coupon_code] and !params[:order][:coupon_code].blank? and @order.coupon_code.present?
-          fire_event('spree.checkout.coupon_code_added', :coupon_code => @order.coupon_code)
+          event_name = "spree.checkout.coupon_code_added"
+          if promo = Spree::Promotion.with_coupon_code(@order.coupon_code).where(:event_name => event_name).first
+            fire_event('spree.checkout.coupon_code_added', :coupon_code => @order.coupon_code)
+          else
+            flash[:error] = t(:promotion_not_found)
+            render :edit and return
+          end
         end
       end
 
