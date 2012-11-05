@@ -159,6 +159,7 @@ module Spree
 
         @order.finalize!
         flash[:notice] = I18n.t(:order_processed_successfully)
+        flash[:commerce_tracking] = "true"
         redirect_to completion_route
 
       else
@@ -247,15 +248,10 @@ module Spree
     def order_opts(order, payment_method, stage)
       items = order.line_items.map do |item|
         price = (item.price * 100).to_i # convert for gateway
-        { :name        => item.variant.product.name,
-          :description => (item.variant.product.description[0..120] if item.variant.product.description),
+        { :name        => item.variant.product.name.gsub(/<\/?[^>]*>/, ""),
           :number      => item.variant.sku,
           :quantity    => item.quantity,
-          :amount      => price,
-          :weight      => item.variant.weight,
-          :height      => item.variant.height,
-          :width       => item.variant.width,
-          :depth       => item.variant.weight }
+          :amount      => price }
         end
 
       credits = order.adjustments.eligible.map do |credit|
