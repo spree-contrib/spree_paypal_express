@@ -29,7 +29,11 @@ module Spree
     def paypal_payment
       load_order
       opts = all_opts(@order,params[:payment_method_id], 'payment')
-      opts.merge!(address_options(@order))
+      unless payment_method.preferred_cart_checkout
+        opts.merge!(address_options(@order))
+      else
+        opts.merge!(shipping_options)
+      end
       @gateway = paypal_gateway
 
       if Spree::Config[:auto_capture]
@@ -61,6 +65,8 @@ module Spree
       if @ppx_details.success?
         # now save the updated order info
 
+        #TODO Search for existing records
+
         Spree::PaypalAccount.create(:email => @ppx_details.params["payer"],
                                     :payer_id => @ppx_details.params["payer_id"],
                                     :payer_country => @ppx_details.params["payer_country"],
@@ -90,11 +96,18 @@ module Spree
 
           @order.ship_address = order_ship_address
           @order.bill_address ||= order_ship_address
+
+          #Add Instant Update Shipping
+          if payment_method.preferred_cart_checkout
+            add_shipping_charge
+          end
+
         end
         @order.state = "payment"
         @order.save
 
         if payment_method.preferred_review
+
           @order.next
           render 'spree/shared/paypal_express_confirm'
         else
@@ -223,7 +236,7 @@ module Spree
         :background_color        => "ffffff",  # must be hex only, six chars
         :header_background_color => "ffffff",
         :header_border_color     => "ffffff",
-  :header_image    => chosen_image,
+        :header_image    => chosen_image,
         :allow_note              => true,
         :locale                  => user_locale,
         :req_confirm_shipping    => false,   # for security, might make an option later
@@ -275,6 +288,9 @@ module Spree
         credits_total = credits.map {|i| i[:amount] * i[:quantity] }.sum
       end
 
+      shipping_options = [{:default => true, :name => "default", :amount => 0}]
+
+
       opts = { :return_url        => paypal_confirm_order_checkout_url(order, :payment_method_id => payment_method),
                :cancel_return_url => edit_order_checkout_url(order, :state => :payment),
                :order_id          => order.number,
@@ -283,8 +299,9 @@ module Spree
                :subtotal          => ((order.item_total * 100) + credits_total).to_i,
                :tax               => (order.tax_total*100).to_i,
                :shipping          => (order.ship_total*100).to_i,
-               :money             => (order.total * 100 ).to_i }
-
+               :money             => (order.total * 100 ).to_i,
+               :max_amount        => (order.total * 300 ).to_i}
+                                        
       if stage == "checkout"
         opts[:handling] = 0
 
@@ -294,12 +311,21 @@ module Spree
         #hack to add float rounding difference in as handling fee - prevents PayPal from rejecting orders
         #because the integer totals are different from the float based total. This is temporary and will be
         #removed once Spree's currency values are persisted as integers (normally only 1c)
-        opts[:handling] =  (order.total*100).to_i - opts.slice(:subtotal, :tax, :shipping).values.sum
+        opts[:handling] = (order.total*100).to_i - opts.slice(:subtotal, :tax, :shipping).values.sum
       end
 
       opts
     end
 
+    def shipping_options
+      shipping_default = [{:default => true, :name => "first one", :amount => 0}]
+      {
+        :callback_url      => "#{root_url}paypal_shipping_update",
+        :callback_timeout  => 6,
+        :callback_version  => '61.0',
+        :shipping_options  => shipping_default
+      }
+    end
     def address_options(order)
       if payment_method.preferred_no_shipping
         { :no_shipping => true }
@@ -330,7 +356,6 @@ module Spree
 
       # suggest current user's email or any email stored in the order
       opts[:email] = current_user ? current_user.email : order.email
-
       opts
     end
 
@@ -338,22 +363,19 @@ module Spree
     def flat_rate_shipping_and_handling_options(order, stage)
       # max_fallback = 0.0
       # shipping_options = ShippingMethod.all.map do |shipping_method|
-      #       max_fallback = shipping_method.fallback_amount if shipping_method.fallback_amount > max_fallback
-      #           { :name       => "#{shipping_method.id}",
-      #             :label       => "#{shipping_method.name} - #{shipping_method.zone.name}",
-      #             :amount      => (shipping_method.fallback_amount*100) + 1,
+      #           { :name       => "#{shipping_method.name}",
+      #             :amount      => (shipping_method.rate),
       #             :default     => shipping_method.is_default }
       #         end
-      #
-      #
+      
+      
       # default_shipping_method = ShippingMethod.find(:first, :conditions => {:is_default => true})
-      #
+      
       # opts = { :shipping_options  => shipping_options,
-      #          :max_amount  => (order.total + max_fallback)*100
       #        }
-      #
-      # opts[:shipping] = (default_shipping_method.nil? ? 0 : default_shipping_method.fallback_amount) if stage == "checkout"
-      #
+      
+      # #opts[:shipping] = (default_shipping_method.nil? ? 0 : default_shipping_method.fallback_amount) if stage == "checkout"
+      
       # opts
       {}
     end
@@ -379,6 +401,22 @@ module Spree
 
     def paypal_gateway
       payment_method.provider
+    end
+
+    def add_shipping_charge
+      # Replace with these changes once Active_Merchant pushes pending pull request
+      # shipment_name = @ppx_details.shipping['amount'].chomp(" Shipping")
+      # shipment_cost = @ppx_details.shipping['name'].to_f
+
+      shipment_name = @ppx_details.params['UserSelectedOptions']['ShippingOptionName'].chomp(" Shipping")
+      shipment_cost = @ppx_details.params['UserSelectedOptions']['ShippingOptionAmount'].to_f
+      if @order.shipping_method_id.blank? && @order.rate_hash.present?
+        selected_shipping = @order.rate_hash.detect { |v| v['name'] == shipment_name && v['cost'] == shipment_cost }
+        @order.shipping_method_id = selected_shipping.id
+      end
+      @order.shipments.each { |s| s.destroy unless s.shipping_method.available_to_order?(@order) }
+      @order.create_shipment!
+      @order.update!
     end
 
   end
