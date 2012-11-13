@@ -34,6 +34,7 @@ module Spree
       else
         opts.merge!(shipping_options)
       end
+
       @gateway = paypal_gateway
 
       if Spree::Config[:auto_capture]
@@ -288,8 +289,14 @@ module Spree
         credits_total = credits.map {|i| i[:amount] * i[:quantity] }.sum
       end
 
-      shipping_options = [{:default => true, :name => "default", :amount => 0}]
-
+      unless @order.payment_method.preferred_cart_checkout
+        order_total = (order.total * 100).to_i
+        shipping_total = (order.ship_total*100).to_i
+      else
+        shipping_cost = shipping_options[:shipping_options].first[:amount]
+        order_total = (order.total * 100 + (shipping_cost)).to_i
+        shipping_total = (shipping_cost).to_i
+      end
 
       opts = { :return_url        => paypal_confirm_order_checkout_url(order, :payment_method_id => payment_method),
                :cancel_return_url => edit_order_checkout_url(order, :state => :payment),
@@ -298,9 +305,9 @@ module Spree
                :items             => items,
                :subtotal          => ((order.item_total * 100) + credits_total).to_i,
                :tax               => (order.tax_total*100).to_i,
-               :shipping          => (order.ship_total*100).to_i,
-               :money             => (order.total * 100 ).to_i,
-               :max_amount        => (order.total * 300 ).to_i}
+               :shipping          => shipping_total,
+               :money             => order_total,
+               :max_amount        => (order.total * 300).to_i}
                                         
       if stage == "checkout"
         opts[:handling] = 0
@@ -311,21 +318,40 @@ module Spree
         #hack to add float rounding difference in as handling fee - prevents PayPal from rejecting orders
         #because the integer totals are different from the float based total. This is temporary and will be
         #removed once Spree's currency values are persisted as integers (normally only 1c)
-        opts[:handling] = (order.total*100).to_i - opts.slice(:subtotal, :tax, :shipping).values.sum
+        if @order.payment_method.preferred_cart_checkout
+          opts[:handling] = 0
+        else
+          opts[:handling] = (order.total*100).to_i - opts.slice(:subtotal, :tax, :shipping).values.sum
+        end
       end
 
       opts
     end
 
     def shipping_options
-      shipping_default = [{:default => true, :name => "first one", :amount => 0}]
+      #Uses users address if exists, if not uses first shipping method
+      if (current_user.present? && current_user.addresses.present?)
+        estimate_shipping_for_user
+        shipping_default = @rate_hash_user.map.with_index do |shipping_method, idx|
+          { :default => (idx == 0 ? true : false), 
+            :name => shipping_method.name, 
+            :amount => (shipping_method.cost*100).to_i }
+        end
+      else
+        shipping_method = ShippingMethod.all.first
+        shipping_default = [{ :default => true, 
+                              :name => shipping_method.name, 
+                              :amount => ((shipping_method.calculator.compute(self).to_f) * 100).to_i }]
+      end
+
       {
-        :callback_url      => "#{root_url}paypal_shipping_update",
+        :callback_url      => "http://3kpd.localtunnel.com/paypal_shipping_update",
         :callback_timeout  => 6,
         :callback_version  => '61.0',
         :shipping_options  => shipping_default
       }
     end
+
     def address_options(order)
       if payment_method.preferred_no_shipping
         { :no_shipping => true }
@@ -419,5 +445,19 @@ module Spree
       @order.update!
     end
 
+    def estimate_shipping_for_user
+      zipcode = current_user.addresses.first.zipcode
+      country = current_user.addresses.first.country.iso
+      shipping_methods = Spree::ShippingMethod.all
+      #TODO remove hard coded shipping
+      #Make a deep copy of the order object then stub out the parts required to get a shipping quote
+      @shipping_order = Marshal::load(Marshal.dump(@order)) #Make a deep copy of the order object
+      @shipping_order.ship_address = Spree::Address.new(:country => Spree::Country.find_by_iso(country), :zipcode => zipcode)
+      shipment = Spree::Shipment.new(:address => @shipping_order.ship_address)
+      @shipping_order.ship_address.shipments<<shipment
+      @shipping_order.shipments<<shipment
+      @rate_hash_user = @shipping_order.rate_hash
+      #TODO
+    end
   end
 end

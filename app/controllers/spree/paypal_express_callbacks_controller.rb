@@ -84,7 +84,6 @@ module Spree
         @shipping_order.ship_address.shipments<<shipment
         @shipping_order.shipments<<shipment
         @rate_hash = @shipping_order.rate_hash
-        #TODO
       end
 
   end
