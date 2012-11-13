@@ -345,7 +345,7 @@ module Spree
       end
 
       {
-        :callback_url      => "http://3kpd.localtunnel.com/paypal_shipping_update",
+        :callback_url      => "#{root_url}paypal_shipping_update",
         :callback_timeout  => 6,
         :callback_version  => '61.0',
         :shipping_options  => shipping_default
