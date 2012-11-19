@@ -390,6 +390,17 @@ module Spree
 
       # suggest current user's email or any email stored in the order
       opts[:email] = spree_current_user ? spree_current_user.email : order.email
+      opts[:address_override] = 1
+      opts[:address] = {
+        :name => order.bill_address.full_name,
+        :zip => order.bill_address.zipcode,
+        :address1 => order.bill_address.address1,
+        :address2 => order.bill_address.address2,
+        :city => order.bill_address.city,
+        :phone => order.bill_address.phone,
+        :state => order.bill_address.state_text,
+        :country => order.bill_address.country.iso
+      }
 
       opts
     end
