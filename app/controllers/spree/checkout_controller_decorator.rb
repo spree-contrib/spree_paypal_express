@@ -423,8 +423,10 @@ module Spree
       else
         text = response.to_s
       end
-
-      msg = "#{I18n.t('gateway_error')}: #{text}"
+	  #Con esta línea de código convertimos una línea de texto en el formato de los locale
+	  text = text.parameterize(sep = '_')
+	  #Se agrega la el metodo para la traducción
+      msg = "#{I18n.t('gateway_error')}: #{I18n.t(text)}"      
       logger.error(msg)
       flash[:error] = msg
     end
