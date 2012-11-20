@@ -58,7 +58,19 @@ eCheck payments are now fully supported and PayPal's Instant Payment Notificatio
 3. Enable auto_capture within Spree (as eCheck payments are only supported for purchase and not authorize requests).
 
      Spree::Config.set(:auto_capture => true)
+     
+     **Please note if you accept foreign currency:**
 
+     Auto Capture will only work if you configure your Paypal Store like so:
+
+        Profile > My Selling Tools > Payment Receiving Preferences >
+
+        (this workflow may vary as Paypal updates their UI from time to time)
+
+        Block payments sent to me in a currency I do not hold:
+         [ ] Yes
+         [x] No, accept them and convert them to [Your Default Currency]
+         [ ] Ask Me
 
 
 Configuration
