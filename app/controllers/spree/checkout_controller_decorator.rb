@@ -3,6 +3,7 @@ module Spree
     before_filter :redirect_to_paypal_express_form_if_needed, :only => [:update]
 
     def paypal_checkout
+      p '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
       load_order
       opts = all_opts(@order, params[:payment_method_id], 'checkout')
       opts.merge!(address_options(@order))
@@ -29,11 +30,45 @@ module Spree
     def paypal_payment
       load_order
       opts = all_opts(@order, params[:payment_method_id], 'payment')
+
+      Rails.logger.level = 3
+      logger.error 'order ='
+      logger.error(ActiveSupport::JSON.encode(@order))
+      logger.error('================================')
+      logger.error 'opts = '
+      logger.error opts
+      logger.error('================================')
+      logger.error 'shipping_options ='
+      logger.error shipping_options
+      logger.error 'shipping_options_custom ='
+      logger.error shipping_options_custom(@order)
+      logger.error('================================')
       unless payment_method.preferred_cart_checkout
         opts.merge!(address_options(@order))
       else
-        opts.merge!(shipping_options)
+        #opts.merge!(shipping_options)
+        opts.merge!(shipping_options_custom(@order))
       end
+
+       if opts[:tax] > 0
+        opts[:money] = opts[:subtotal] + opts[:tax] + (@order.adjustment_total * 100).to_i  #opts[:shipping]
+      else
+        opts[:tax] = 0
+        opts[:money] = opts[:subtotal] + opts[:shipping] #(@order.adjustment_total * 100).to_i   + opts[:tax]
+      end
+
+      logger.error 'opts = '
+      logger.error opts
+      logger.error('================================')
+      logger.error('================================')
+      logger.error('================================')
+      logger.error('================================')
+      logger.error('================================')
+      logger.error 'order ='
+      logger.error(ActiveSupport::JSON.encode(@order))
+      logger.error('================================')
+
+      @gateway = paypal_gateway
 
       @gateway = paypal_gateway
 
@@ -341,14 +376,14 @@ module Spree
       if spree_current_user.present? && spree_current_user.respond_to?(:addresses) && spree_current_user.addresses.present?
         estimate_shipping_for_user
         shipping_default = @rate_hash_user.map.with_index do |shipping_method, idx|
-          { :default => (idx == 0 ? true : false), 
-            :name => shipping_method.name, 
+          { :default => (idx == 0 ? true : false),
+            :name => shipping_method.name,
             :amount => (shipping_method.cost*100).to_i }
         end
       else
         shipping_method = ShippingMethod.all.first
-        shipping_default = [{ :default => true, 
-                              :name => shipping_method.name, 
+        shipping_default = [{ :default => true,
+                              :name => shipping_method.name,
                               :amount => ((shipping_method.calculator.compute(@order).to_f) * 100).to_i }]
       end
 
