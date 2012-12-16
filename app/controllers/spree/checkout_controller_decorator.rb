@@ -3,7 +3,6 @@ module Spree
     before_filter :redirect_to_paypal_express_form_if_needed, :only => [:update]
 
     def paypal_checkout
-      p '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
       load_order
       opts = all_opts(@order, params[:payment_method_id], 'checkout')
       opts.merge!(address_options(@order))
@@ -29,47 +28,14 @@ module Spree
 
     def paypal_payment
       load_order
+      logger.error("====================")
+      logger.error("#{ActiveSupport::JSON.encode(@order)}")
       opts = all_opts(@order, params[:payment_method_id], 'payment')
-
-      Rails.logger.level = 3
-      logger.error 'order ='
-      logger.error(ActiveSupport::JSON.encode(@order))
-      logger.error('================================')
-      logger.error 'opts = '
-      logger.error opts
-      logger.error('================================')
-      logger.error 'shipping_options ='
-      logger.error shipping_options
-      logger.error 'shipping_options_custom ='
-      logger.error shipping_options_custom(@order)
-      logger.error('================================')
       unless payment_method.preferred_cart_checkout
         opts.merge!(address_options(@order))
       else
-        #opts.merge!(shipping_options)
-        opts.merge!(shipping_options_custom(@order))
+        opts.merge!(shipping_options)
       end
-
-       if opts[:tax] > 0
-        opts[:money] = opts[:subtotal] + opts[:tax] + (@order.adjustment_total * 100).to_i  #opts[:shipping]
-      else
-        opts[:tax] = 0
-        opts[:money] = opts[:subtotal] + opts[:shipping] #(@order.adjustment_total * 100).to_i   + opts[:tax]
-      end
-
-      logger.error 'opts = '
-      logger.error opts
-      logger.error('================================')
-      logger.error('================================')
-      logger.error('================================')
-      logger.error('================================')
-      logger.error('================================')
-      logger.error 'order ='
-      logger.error(ActiveSupport::JSON.encode(@order))
-      logger.error('================================')
-
-      @gateway = paypal_gateway
-
       @gateway = paypal_gateway
 
       if Spree::Config[:auto_capture]
@@ -331,13 +297,17 @@ module Spree
         items.concat credits
         credits_total = credits.map {|i| i[:amount] * i[:quantity] }.sum
       end
-
+      logger.error("            ======================")
+      logger.error("order.payment_method.preferred_cart_checkout #{order.payment_method.preferred_cart_checkout}")
+      logger.error("            ======================")
+      logger.error("order.total #{order.total }")
       unless order.payment_method.preferred_cart_checkout
         order_total = (order.total * 100).to_i
         shipping_total = (order.ship_total*100).to_i
       else
         shipping_cost = shipping_options[:shipping_options].first[:amount]
-        order_total = (order.total * 100 + (shipping_cost)).to_i
+      #  order_total = (order.total * 100 + (shipping_cost)).to_i
+        order_total = (order.total * 100).to_i
         shipping_total = (shipping_cost).to_i
       end
 
