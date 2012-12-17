@@ -317,6 +317,8 @@ module Spree
                :money             => order_total,
                :max_amount        => (order.total * 300).to_i}
 
+      logger.error("=============================")
+
       logger.error("order_total => #{order_total} money #{opts[:money]}")
 
       if stage == "checkout"
