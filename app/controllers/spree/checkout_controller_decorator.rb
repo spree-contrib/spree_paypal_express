@@ -305,7 +305,6 @@ module Spree
         shipping_total = (shipping_cost).to_i
       end
 
-      logger.error("order_total #{order_total} ")
 
       opts = { :return_url        => paypal_confirm_order_checkout_url(order, :payment_method_id => payment_method_id),
                :cancel_return_url => edit_order_checkout_url(order, :state => :payment),
@@ -317,6 +316,8 @@ module Spree
                :shipping          => shipping_total,
                :money             => order_total,
                :max_amount        => (order.total * 300).to_i}
+
+      logger.error("order_total => #{order_total} money #{opts[:money]}")
 
       if stage == "checkout"
         opts[:handling] = 0
