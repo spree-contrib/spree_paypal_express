@@ -28,8 +28,6 @@ module Spree
 
     def paypal_payment
       load_order
-      logger.error("====================")
-      logger.error("#{ActiveSupport::JSON.encode(@order)}")
       opts = all_opts(@order, params[:payment_method_id], 'payment')
       unless payment_method.preferred_cart_checkout
         opts.merge!(address_options(@order))
@@ -297,10 +295,6 @@ module Spree
         items.concat credits
         credits_total = credits.map {|i| i[:amount] * i[:quantity] }.sum
       end
-      logger.error("            ======================")
-      logger.error("order.payment_method.preferred_cart_checkout #{order.payment_method.preferred_cart_checkout}")
-      logger.error("            ======================")
-      logger.error("order.total #{order.total }")
       unless order.payment_method.preferred_cart_checkout
         order_total = (order.total * 100).to_i
         shipping_total = (order.ship_total*100).to_i
