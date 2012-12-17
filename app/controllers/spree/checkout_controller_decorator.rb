@@ -41,7 +41,8 @@ module Spree
       else
         @ppx_response = @gateway.setup_authorization(opts[:money], opts)
       end
-        logger.error("============ #{opts[:money]} ================= #{ActiveSupport::JSON.encode(opts)}")
+        logger.error("============ #{opts[:money]}
+          ================= #{ActiveSupport::JSON.encode(opts)}")
       unless @ppx_response.success?
         gateway_error(@ppx_response)
         redirect_to edit_order_checkout_url(@order, :state => "payment")
@@ -295,16 +296,17 @@ module Spree
         items.concat credits
         credits_total = credits.map {|i| i[:amount] * i[:quantity] }.sum
       end
-      unless order.payment_method.preferred_cart_checkout
-        order_total = (order.total * 100).to_i
-        shipping_total = (order.ship_total*100).to_i
-      else
-        shipping_cost = shipping_options[:shipping_options].first[:amount]
+     # unless order.payment_method.preferred_cart_checkout
+       # order_total = (order.total * 100).to_i
+        #shipping_total = (order.ship_total*100).to_i
+     # else
+       # shipping_cost = shipping_options[:shipping_options].first[:amount]
       #  order_total = (order.total * 100 + (shipping_cost)).to_i
-        order_total = (order.total * 100).to_i
-        shipping_total = (shipping_cost).to_i
-      end
-
+        #order_total = (order.total * 100).to_i
+        #shipping_total = (shipping_cost).to_i
+      #end
+      order_total = (order.total * 100).to_i
+      shipping_total = (shipping_cost).to_i
 
       opts = { :return_url        => paypal_confirm_order_checkout_url(order, :payment_method_id => payment_method_id),
                :cancel_return_url => edit_order_checkout_url(order, :state => :payment),
@@ -319,7 +321,6 @@ module Spree
 
       logger.error("=============================")
 
-      logger.error("order_total => #{order_total} money #{opts[:money]} ")
 
       if stage == "checkout"
         opts[:handling] = 0
