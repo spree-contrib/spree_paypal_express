@@ -41,7 +41,7 @@ module Spree
       else
         @ppx_response = @gateway.setup_authorization(opts[:money], opts)
       end
-        logger.error("=================================#{ActiveSupport::JSON.encode(opts)}")
+        logger.error("============ #{opts[:money]} ================= #{ActiveSupport::JSON.encode(opts)}")
       unless @ppx_response.success?
         gateway_error(@ppx_response)
         redirect_to edit_order_checkout_url(@order, :state => "payment")
