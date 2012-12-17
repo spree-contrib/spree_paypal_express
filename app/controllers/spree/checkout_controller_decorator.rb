@@ -305,6 +305,8 @@ module Spree
         shipping_total = (shipping_cost).to_i
       end
 
+      logger.error("order_total #{order_total} ")
+
       opts = { :return_url        => paypal_confirm_order_checkout_url(order, :payment_method_id => payment_method_id),
                :cancel_return_url => edit_order_checkout_url(order, :state => :payment),
                :order_id          => order.number,
