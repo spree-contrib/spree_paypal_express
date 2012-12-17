@@ -295,15 +295,16 @@ module Spree
         items.concat credits
         credits_total = credits.map {|i| i[:amount] * i[:quantity] }.sum
       end
-     # unless order.payment_method.preferred_cart_checkout
-       # order_total = (order.total * 100).to_i
-        #shipping_total = (order.ship_total*100).to_i
-     # else
-       # shipping_cost = shipping_options[:shipping_options].first[:amount]
-      #  order_total = (order.total * 100 + (shipping_cost)).to_i
-        #shipping_total = (shipping_cost).to_i
-      #end
-      order_total = (order.total * 100).to_i
+      unless order.payment_method.preferred_cart_checkout
+        order_total = (order.total * 100).to_i
+        shipping_total = (order.ship_total*100).to_i
+      else
+        shipping_cost = shipping_options[:shipping_options].first[:amount]
+        order_total = (order.total * 100 + (shipping_cost)).to_i
+        shipping_total = (shipping_cost).to_i
+      end
+
+      order_total =  (order.total * 100).to_i
       shipping_total = (order.ship_total*100).to_i
 
       opts = { :return_url        => paypal_confirm_order_checkout_url(order, :payment_method_id => payment_method_id),
@@ -316,6 +317,9 @@ module Spree
                :shipping          => shipping_total,
                :money             => order_total,
                :max_amount        => (order.total * 300).to_i}
+
+      logger.error("=============================")
+
 
       if stage == "checkout"
         opts[:handling] = 0
@@ -331,9 +335,6 @@ module Spree
         else
           opts[:handling] = (order.total*100).to_i - opts.slice(:subtotal, :tax, :shipping).values.sum
         end
-              logger.error("===========")
-              logger.error(" #{ActiveSupport::JSON.encode(opts)}")
-              logger.error("===========")
       end
 
       opts
