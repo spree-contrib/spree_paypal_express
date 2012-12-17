@@ -41,6 +41,12 @@ module Spree
       else
         @ppx_response = @gateway.setup_authorization(opts[:money], opts)
       end
+     # logger.error("===================opts")
+      #logger.error ActiveSupport::JSON.encode(opts)
+      #logger.error("===================")
+      #logger.error("===================order")
+      #logger.error ActiveSupport::JSON.encode(@order)
+      #logger.error("===================")
 
       unless @ppx_response.success?
         gateway_error(@ppx_response)
@@ -55,6 +61,7 @@ module Spree
     end
 
     def paypal_confirm
+      logger.error("============================ paypal_confirm")
       load_order
 
       opts = { :token => params[:token], :payer_id => params[:PayerID] }.merge all_opts(@order, params[:payment_method_id],  'payment')
@@ -318,7 +325,6 @@ module Spree
                :money             => order_total,
                :max_amount        => (order.total * 300).to_i}
 
-      logger.error("=============================")
 
 
       if stage == "checkout"
@@ -336,7 +342,6 @@ module Spree
           opts[:handling] = (order.total*100).to_i - opts.slice(:subtotal, :tax, :shipping).values.sum
         end
       end
-
       opts
     end
 
@@ -350,7 +355,8 @@ module Spree
             :amount => (shipping_method.cost*100).to_i }
         end
       else
-        shipping_method = ShippingMethod.all.first
+        #shipping_method = ShippingMethod.all.first
+        shipping_method = ShippingMethod.find_by_id(@order.shipping_method_id)
         shipping_default = [{ :default => true,
                               :name => shipping_method.name,
                               :amount => ((shipping_method.calculator.compute(@order).to_f) * 100).to_i }]
