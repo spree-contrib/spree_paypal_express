@@ -302,11 +302,10 @@ module Spree
      # else
        # shipping_cost = shipping_options[:shipping_options].first[:amount]
       #  order_total = (order.total * 100 + (shipping_cost)).to_i
-        #order_total = (order.total * 100).to_i
         #shipping_total = (shipping_cost).to_i
       #end
       order_total = (order.total * 100).to_i
-      shipping_total = (shipping_cost).to_i
+      shipping_total = (order.ship_total*100).to_i
 
       opts = { :return_url        => paypal_confirm_order_checkout_url(order, :payment_method_id => payment_method_id),
                :cancel_return_url => edit_order_checkout_url(order, :state => :payment),
