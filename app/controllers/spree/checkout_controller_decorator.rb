@@ -7,13 +7,11 @@ module Spree
       opts = all_opts(@order, params[:payment_method_id], 'checkout')
       opts.merge!(address_options(@order))
       @gateway = paypal_gateway
-
       if Spree::Config[:auto_capture]
         @ppx_response = @gateway.setup_purchase(opts[:money], opts)
       else
         @ppx_response = @gateway.setup_authorization(opts[:money], opts)
       end
-
       unless @ppx_response.success?
         gateway_error(@ppx_response)
         redirect_to edit_order_url(@order)
@@ -41,12 +39,6 @@ module Spree
       else
         @ppx_response = @gateway.setup_authorization(opts[:money], opts)
       end
-     # logger.error("===================opts")
-      #logger.error ActiveSupport::JSON.encode(opts)
-      #logger.error("===================")
-      #logger.error("===================order")
-      #logger.error ActiveSupport::JSON.encode(@order)
-      #logger.error("===================")
 
       unless @ppx_response.success?
         gateway_error(@ppx_response)
@@ -61,7 +53,6 @@ module Spree
     end
 
     def paypal_confirm
-      logger.error("============================ paypal_confirm")
       load_order
 
       opts = { :token => params[:token], :payer_id => params[:PayerID] }.merge all_opts(@order, params[:payment_method_id],  'payment')
@@ -71,9 +62,7 @@ module Spree
 
       if @ppx_details.success?
         # now save the updated order info
-
         #TODO Search for existing records
-
         Spree::PaypalAccount.create(:email => @ppx_details.params["payer"],
                                     :payer_id => @ppx_details.params["payer_id"],
                                     :payer_country => @ppx_details.params["payer_country"],
@@ -100,6 +89,8 @@ module Spree
             order_ship_address.state_name = ship_address["state"]
           end
           order_ship_address.save!
+
+
 
           @order.ship_address = order_ship_address
           @order.bill_address ||= order_ship_address
@@ -130,6 +121,7 @@ module Spree
     rescue ActiveMerchant::ConnectionError => e
       gateway_error I18n.t(:unable_to_connect_to_gateway)
       redirect_to edit_order_url(@order)
+
     end
 
     def paypal_finish
@@ -382,7 +374,7 @@ module Spree
             :address1   => order.ship_address.address1,
             :address2   => order.ship_address.address2,
             :city       => order.ship_address.city,
-            :state      => order.ship_address.state.nil? ? order.ship_address.state_name.to_s : order.ship_address.state.abbr,
+            :state      => order.ship_address.state_id ? order.ship_address.state.name : order.ship_address.state_name ,
             :country    => order.ship_address.country.iso,
             :zip        => order.ship_address.zipcode,
             :phone      => order.ship_address.phone
@@ -409,9 +401,10 @@ module Spree
           :address2 => order.bill_address.address2,
           :city => order.bill_address.city,
           :phone => order.bill_address.phone,
-          :state => order.bill_address.state_text,
+           :state      => order.bill_address.state_id ? order.bill_address.state.name : order.bill_address.state_name ,
           :country => order.bill_address.country.iso
         }
+
       end
       opts
     end
