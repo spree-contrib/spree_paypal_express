@@ -348,7 +348,7 @@ module Spree
         end
       else
         #shipping_method = ShippingMethod.all.first
-        shipping_method = ShippingMethod.find_by_id(@order.shipping_method_id)
+        shipping_method = (ShippingMethod.find_by_id(@order.shipping_method_id) ? ShippingMethod.find_by_id(@order.shipping_method_id) : ShippingMethod.all.first)
         shipping_default = [{ :default => true,
                               :name => shipping_method.name,
                               :amount => ((shipping_method.calculator.compute(@order).to_f) * 100).to_i }]
