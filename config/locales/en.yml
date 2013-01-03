@@ -19,6 +19,9 @@ en:
   payer_id: Payer ID
   payer_country: Country
   payer_status: Status
+  paypal_payer_statuses:
+    verified: verified
+    unverified: unverified
   comment: Comment
   account_details: Account Details
   finalize:
