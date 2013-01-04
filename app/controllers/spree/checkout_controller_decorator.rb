@@ -7,13 +7,11 @@ module Spree
       opts = all_opts(@order, params[:payment_method_id], 'checkout')
       opts.merge!(address_options(@order))
       @gateway = paypal_gateway
-
       if Spree::Config[:auto_capture]
         @ppx_response = @gateway.setup_purchase(opts[:money], opts)
       else
         @ppx_response = @gateway.setup_authorization(opts[:money], opts)
       end
-
       unless @ppx_response.success?
         gateway_error(@ppx_response)
         redirect_to edit_order_url(@order)
@@ -34,7 +32,6 @@ module Spree
       else
         opts.merge!(shipping_options)
       end
-
       @gateway = paypal_gateway
 
       if Spree::Config[:auto_capture]
@@ -65,9 +62,7 @@ module Spree
 
       if @ppx_details.success?
         # now save the updated order info
-
         #TODO Search for existing records
-
         Spree::PaypalAccount.create(:email => @ppx_details.params["payer"],
                                     :payer_id => @ppx_details.params["payer_id"],
                                     :payer_country => @ppx_details.params["payer_country"],
@@ -94,6 +89,8 @@ module Spree
             order_ship_address.state_name = ship_address["state"]
           end
           order_ship_address.save!
+
+
 
           @order.ship_address = order_ship_address
           @order.bill_address ||= order_ship_address
@@ -124,6 +121,7 @@ module Spree
     rescue ActiveMerchant::ConnectionError => e
       gateway_error I18n.t(:unable_to_connect_to_gateway)
       redirect_to edit_order_url(@order)
+
     end
 
     def paypal_finish
@@ -296,7 +294,6 @@ module Spree
         items.concat credits
         credits_total = credits.map {|i| i[:amount] * i[:quantity] }.sum
       end
-
       unless order.payment_method.preferred_cart_checkout
         order_total = (order.total * 100).to_i
         shipping_total = (order.ship_total*100).to_i
@@ -305,6 +302,9 @@ module Spree
         order_total = (order.total * 100 + (shipping_cost)).to_i
         shipping_total = (shipping_cost).to_i
       end
+
+      order_total =  (order.total * 100).to_i
+      shipping_total = (order.ship_total*100).to_i
 
       opts = { :return_url        => paypal_confirm_order_checkout_url(order, :payment_method_id => payment_method_id),
                :cancel_return_url => edit_order_checkout_url(order, :state => :payment),
@@ -316,6 +316,8 @@ module Spree
                :shipping          => shipping_total,
                :money             => order_total,
                :max_amount        => (order.total * 300).to_i}
+
+
 
       if stage == "checkout"
         opts[:handling] = 0
@@ -332,7 +334,6 @@ module Spree
           opts[:handling] = (order.total*100).to_i - opts.slice(:subtotal, :tax, :shipping).values.sum
         end
       end
-
       opts
     end
 
@@ -341,14 +342,15 @@ module Spree
       if spree_current_user.present? && spree_current_user.respond_to?(:addresses) && spree_current_user.addresses.present?
         estimate_shipping_for_user
         shipping_default = @rate_hash_user.map.with_index do |shipping_method, idx|
-          { :default => (idx == 0 ? true : false), 
-            :name => shipping_method.name, 
+          { :default => (idx == 0 ? true : false),
+            :name => shipping_method.name,
             :amount => (shipping_method.cost*100).to_i }
         end
       else
-        shipping_method = ShippingMethod.all.first
-        shipping_default = [{ :default => true, 
-                              :name => shipping_method.name, 
+        #shipping_method = ShippingMethod.all.first
+        shipping_method = (ShippingMethod.find_by_id(@order.shipping_method_id) ? ShippingMethod.find_by_id(@order.shipping_method_id) : ShippingMethod.all.first)
+        shipping_default = [{ :default => true,
+                              :name => shipping_method.name,
                               :amount => ((shipping_method.calculator.compute(@order).to_f) * 100).to_i }]
       end
 
@@ -372,7 +374,7 @@ module Spree
             :address1   => order.ship_address.address1,
             :address2   => order.ship_address.address2,
             :city       => order.ship_address.city,
-            :state      => order.ship_address.state.nil? ? order.ship_address.state_name.to_s : order.ship_address.state.abbr,
+            :state      => order.ship_address.state_id ? order.ship_address.state.name : order.ship_address.state_name ,
             :country    => order.ship_address.country.iso,
             :zip        => order.ship_address.zipcode,
             :phone      => order.ship_address.phone
@@ -399,9 +401,10 @@ module Spree
           :address2 => order.bill_address.address2,
           :city => order.bill_address.city,
           :phone => order.bill_address.phone,
-          :state => order.bill_address.state_text,
+           :state      => order.bill_address.state_id ? order.bill_address.state.name : order.bill_address.state_name ,
           :country => order.bill_address.country.iso
         }
+
       end
       opts
     end
