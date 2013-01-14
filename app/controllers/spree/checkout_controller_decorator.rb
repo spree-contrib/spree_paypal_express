@@ -192,7 +192,12 @@ module Spree
     private
 
     def asset_url(_path)
-      URI::HTTP.build(:path => ActionController::Base.helpers.asset_path(_path), :host => Spree::Config[:site_url].strip).to_s
+      host = Spree::Config[:site_url].strip
+      unless host.match /https?:\/\//
+          host = "http://#{host}"
+      end
+      uri = URI.parse(host)
+      URI::HTTP.build(:path => ActionController::Base.helpers.asset_path(_path), :host => uri.host, :port => (uri.port || 80)).to_s
     end
 
     def record_log(payment, response)
