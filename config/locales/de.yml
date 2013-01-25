@@ -1,0 +1,37 @@
+---
+de:
+  ipn_transaction: IPN Transaktion
+  unknown_transaction: Unbekannte Transaktion
+  edit_paypal_info: Paypal Express Zahlung bearbeiten
+  paypal_payment: Paypal Express Zahlung
+  paypal_txn_id: Transaktionscode
+  paypal_capture_complete: Paypal Transaktion vollständig durchgeführt.
+  unable_to_capture_paypal: Paypal Transaktion konnte nicht durchgeführt werden.
+  signature: Signatur
+  order_not_yet_placed: "Ihre Bestellung wurde <strong>NICHT</strong> abgeschlossen werden, bitte überprüfen sie die Details und klicken erneut <strong>Bestellung abschließen</strong>."
+  paypal_payment_id: PayPal Zahlungs ID
+  pending_reason: Pending Reason
+  result: Ergebnis
+  review: Bewertung
+  no_shipping: Keine Versandkosten
+  cart_checkout: Warenkorb bezahlen
+  allow_guest_checkout: Gastzahlung erlauben
+  paypal_account: PayPal Konto
+  payer_id: Bezahler ID
+  payer_country: Land
+  payer_status: Status
+  paypal_payer_statuses:
+    verified: verifiziert
+    unverified: unverifiziert
+  comment: Kommentar
+  account_details: Kontodetails
+  finalize:
+    paypalexpress: Bestellung abschließen
+  activerecord:
+     attributes:
+       paypal_payment:
+         amount: Betrag
+     models:
+       paypal_payment:
+         one: PayPal Zahlung
+         other: PayPal Zahlungen
