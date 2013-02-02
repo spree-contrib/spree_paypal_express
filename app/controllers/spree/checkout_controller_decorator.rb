@@ -218,6 +218,10 @@ module Spree
       end
 
       load_order
+      if not @order.errors.empty?
+         render :edit and return
+      end
+
       payment_method = Spree::PaymentMethod.find(params[:order][:payments_attributes].first[:payment_method_id])
 
       if payment_method.kind_of?(Spree::BillingIntegration::PaypalExpress) || payment_method.kind_of?(Spree::BillingIntegration::PaypalExpressUk)
