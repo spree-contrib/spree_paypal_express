@@ -1,8 +1,8 @@
 <% content_for :head do %>
   <script type="text/javascript">
-    jQuery(document).ready(function(){
+    $(window).load(function() {
       $("label:contains('<%= payment_method.name %>')").hide();
-      $("label:contains('<%= payment_method.name %>') input").disable();
+      $("label:contains('<%= payment_method.name %>') input").attr('disabled', true);
     });
   </script>
 <% end %>
