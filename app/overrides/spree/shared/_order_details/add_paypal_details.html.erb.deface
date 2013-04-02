@@ -2,13 +2,17 @@
   insert_bottom '.payment-info'
   original 'cd012ef486088f2543371329dde5d4f8f3d4191b' 
 -->
-<% if order.payments.present? && order.payments.any? { |source| source.source_type == 'Spree::PaypalAccount' } %>
-  <span class="cc-type">
-    <%= image_tag "paypal.png" %>
-    <%= t("paypal_payer_statuses.#{order.payment.source.payer_status.to_s}").capitalize %>
-  </span>
-  <br />
-  <span class="full-name">
-    <%= order.payment.source.email %>
-  </span>
-<% end %>
+  <% order.payments.each do |payment| %>
+    <% if (payment.source_type == 'Spree::PaypalAccount') %>
+      <span class="cc-type">
+        <%= image_tag "paypal.png" %>
+        <%= t("paypal_payer_statuses.#{payment.source.payer_status.to_s}").capitalize %>
+      </span>
+      <br />
+      <span class="full-name">
+      <%= payment.source.email %>
+      </span>
+    <% end %>
+  <% end %>
+
+
