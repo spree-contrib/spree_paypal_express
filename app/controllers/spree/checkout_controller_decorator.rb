@@ -74,7 +74,9 @@ module Spree
                                     :payer_country => @ppx_details.params["payer_country"],
                                     :payer_status => @ppx_details.params["payer_status"])
 
-        @order.special_instructions = @ppx_details.params["note"]
+        if Spree::Config[:shipping_instructions]
+          @order.special_instructions = @ppx_details.params["note"]
+        end
 
         unless payment_method.preferred_no_shipping
           ship_address = @ppx_details.address
@@ -243,7 +245,7 @@ module Spree
         :header_background_color => "ffffff",
         :header_border_color     => "ffffff",
         :header_image            => chosen_image,
-        :allow_note              => true,
+        :allow_note              => Spree::Config[:shipping_instructions],
         :locale                  => user_locale,
         :req_confirm_shipping    => false,   # for security, might make an option later
         :user_action             => user_action
