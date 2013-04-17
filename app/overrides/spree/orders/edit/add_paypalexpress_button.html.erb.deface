@@ -1,0 +1,5 @@
+<!--
+  insert_bottom '[data-hook=cart_buttons]'
+-->
+  <%= render :partial => 'spree/orders/cart_paypalexpress_button' %>
+

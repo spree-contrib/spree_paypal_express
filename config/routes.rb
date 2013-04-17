@@ -12,7 +12,7 @@ Spree::Core::Engine.routes.draw do
 
   match '/paypal_notify' => 'paypal_express_callbacks#notify', :via => [:get, :post]
 
-  match '/paypal_shipping_update' => 'paypal_express_callbacks#shipping_estimate', :via => :post
+  match '/paypal_shipping_update/:id' => 'paypal_express_callbacks#shipping_estimate', :via => :post
 
   namespace :admin do
     resources :orders do

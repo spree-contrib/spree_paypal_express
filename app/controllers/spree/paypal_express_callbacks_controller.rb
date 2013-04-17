@@ -47,8 +47,8 @@ module Spree
       estimate_shipping_and_taxes
 
       payment_methods_atts2 = {}
-      @rate_hash.each_with_index do |shipping_method, idx|
-        payment_methods_atts2["L_TAXAMT#{idx}"] = @order.tax_total #TODO need to calculate based on shipping method
+      @shipping_and_taxes.each_with_index do |(shipping_method, tax_total), idx|
+        payment_methods_atts2["L_TAXAMT#{idx}"] = tax_total
         payment_methods_atts2["L_SHIPPINGOPTIONAMOUNT#{idx}"] = shipping_method.cost
         payment_methods_atts2["L_SHIPPINGOPTIONNAME#{idx}"] = shipping_method.name
         payment_methods_atts2["L_SHIPPINGOPTIONLABEL#{idx}"] = "Shipping" #Do not change, required field
@@ -73,17 +73,21 @@ module Spree
       end
 
       def estimate_shipping_and_taxes
-        @order = Spree::Order.find_by_number(current_order(true).number)
-        zipcode = @zip
-        shipping_methods = Spree::ShippingMethod.all
+        @order = Spree::Order.find_by_number(params[:id])
         #TODO remove hard coded shipping
         #Make a deep copy of the order object then stub out the parts required to get a shipping quote
         @shipping_order = Marshal::load(Marshal.dump(@order)) #Make a deep copy of the order object
-        @shipping_order.ship_address = Spree::Address.new(:country => Spree::Country.find_by_iso("#{@country}"), :zipcode => zipcode)
+        @shipping_order.ship_address = Spree::Address.new(:country => Spree::Country.find_by_iso("#{@country}"), :zipcode => @zip)
         shipment = Spree::Shipment.new(:address => @shipping_order.ship_address)
         @shipping_order.ship_address.shipments<<shipment
         @shipping_order.shipments<<shipment
-        @rate_hash = @shipping_order.rate_hash
+        @shipping_and_taxes = @shipping_order.rate_hash.map do |shipping_method|
+          #TODO need to calculate based on shipping method
+          tax_total = TaxRate.match(@shipping_order).sum do |rate|
+            rate.compute_amount(@shipping_order)
+          end
+          [shipping_method, tax_total]
+        end
       end
 
   end
