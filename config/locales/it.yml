@@ -1,0 +1,36 @@
+---
+it:
+  ipn_transaction: "Transazione IPN"
+  unknown_transaction: "Transazione sconosciuta"
+  edit_paypal_info: "Modifica Pagamento Paypal Express"
+  paypal_payment: "Pagamento Paypal Express"
+  paypal_txn_id: "Codice Transazione"
+  paypal_capture_complete:
+  unable_to_capture_paypal:
+  signature: "Firma"
+  order_not_yet_placed:
+  paypal_payment_id: "ID Pagamento Paypal"
+  pending_reason:
+  result: "Risultato"
+  review:
+  no_shipping: No Shipping
+  cart_checkout: "Checkout del carrello"
+  paypal_account: "Account Paypal"
+  payer_id: "ID Acquirente"
+  payer_country: "Nazione"
+  payer_status: "Status"
+  paypal_payer_statuses:
+    verified: "Verificato"
+    unverified: "Non verificato"
+  comment: "Commento"
+  account_details: "Dettagli Account"
+  finalize:
+    paypalexpress: "Rileva Pagamento"
+  activerecord:
+     attributes:
+       paypal_payment:
+         amount: "Totale"
+     models:
+       paypal_payment:
+         one: "Pagamento Paypal"
+         other: "Pagamenti Paypal"
