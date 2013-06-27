@@ -14,11 +14,11 @@
 <% elsif source.is_a?(Spree::PaypalAccount) %>
   <span class="cc-type">
     <%= image_tag "paypal.png" %>
-    <%= t("paypal_payer_statuses.#{payment.source.payer_status.to_s}").capitalize %>
+    <%= t("paypal_payer_statuses.#{source.payer_status.to_s}").capitalize %>
   </span>
   <br />
   <span class="full-name">
-  <%= payment.source.email %>
+  <%= source.email %>
   </span>
 <% else %>
   <%= content_tag(:span, payment.payment_method.name) %>
