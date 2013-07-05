@@ -11,6 +11,7 @@ en:
   order_not_yet_placed: "Your order has <strong>NOT</strong> been be placed, please review the details and click <strong>Place Order</strong> below to finalize your order."
   paypal_payment_id: PayPal Payment ID
   pending_reason: Pending Reason
+  place_order: Place Order
   result: Result
   review: Review
   no_shipping: No Shipping

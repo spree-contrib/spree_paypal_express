@@ -1,5 +1,37 @@
 ---
 es:
+  ipn_transaction: Transacción IPN
+  unknown_transaction: Transacción desconocida
+  edit_paypal_info: Editar pago PayPal Express
+  paypal_payment: Pago PayPal Express
+  paypal_txn_id: Código de transacción
+  paypal_capture_complete: La transacción PayPal ha sido capturada
+  unable_to_capture_paypal: No se puede capturar la transacción PayPal
+  signature: Signatura
+  order_not_yet_placed: "Tu pedido <strong>NO</strong> se ha completado, por favor revisa los detalles y haz click en <strong>Hacer Pedido</strong> debajo para finalizar tu pedido."
+  paypal_payment_id: ID del pago PayPal
+  pending_reason: Razón pendiente
+  place_order: Hacer Pedido
+  result: Resultado
+  review: Revisar
+  no_shipping: Sin envío
+  cart_checkout: Pedido desde carrito
+  paypal_account: Cuenta PayPal
+  payer_id: ID del pagador
+  payer_country: País
+  payer_status: Estado
   paypal_payer_statuses:
     verified: verificado
     unverified: no verificado
+  comment: Comentario
+  account_details: Detalles de cuenta
+  finalize:
+    paypalexpress: Capturar Pago
+  activerecord:
+     attributes:
+       paypal_payment:
+         amount: Cantidad
+     models:
+       paypal_payment:
+         one: Pago PayPal
+         other: Pagos PayPal

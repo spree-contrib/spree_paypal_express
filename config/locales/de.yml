@@ -11,6 +11,7 @@ de:
   order_not_yet_placed: "Ihre Bestellung wurde <strong>NICHT</strong> abgeschlossen werden, bitte überprüfen sie die Details und klicken erneut <strong>Bestellung abschließen</strong>."
   paypal_payment_id: PayPal Zahlungs ID
   pending_reason: Pending Reason
+  place_order: Bestellung abschließen
   result: Ergebnis
   review: Bewertung
   no_shipping: Keine Versandkosten
