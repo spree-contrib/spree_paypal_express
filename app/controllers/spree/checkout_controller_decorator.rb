@@ -101,9 +101,15 @@ module Spree
           @order.ship_address = order_ship_address
           @order.bill_address ||= order_ship_address
 
+          @order.email ||= @ppx_details.params["payer"]
+
           #Add Instant Update Shipping
           if payment_method.preferred_cart_checkout
             add_shipping_charge
+
+            unless @order.adjustments.tax.exists?
+              @order.create_tax_charge!
+            end
           end
 
         end
@@ -359,7 +365,7 @@ module Spree
       end
 
       {
-        :callback_url      => spree.root_url + "paypal_shipping_update",
+        :callback_url      => spree.root_url + "paypal_shipping_update/#{@order.number}",
         :callback_timeout  => 6,
         :callback_version  => '61.0',
         :shipping_options  => shipping_default
@@ -492,5 +498,11 @@ module Spree
       @rate_hash_user = @shipping_order.rate_hash
       #TODO
     end
+
+    def skip_state_validation_with_paypal_express?
+      %w(paypal_checkout paypal_payment paypal_confirm paypal_finish).include?(action_name) or skip_state_validation_without_paypal_express?
+    end
+    alias_method_chain :skip_state_validation?, :paypal_express
+
   end
 end

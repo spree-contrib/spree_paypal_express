@@ -1,0 +1,10 @@
+  <% @order.available_payment_methods.each do |payment_method| %>
+    <% if payment_method.method_type.start_with?('paypalexpress') and payment_method.preferred_cart_checkout %>
+      <a href="<%= paypal_payment_order_checkout_url @order, :payment_method_id => payment_method.id %>">
+        <img src="https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif" />
+      </a>
+    <% end %>
+  <% end %>
+
+
+
