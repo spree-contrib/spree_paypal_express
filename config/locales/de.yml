@@ -8,15 +8,15 @@ de:
   paypal_capture_complete: Paypal Transaktion vollständig durchgeführt.
   unable_to_capture_paypal: Paypal Transaktion konnte nicht durchgeführt werden.
   signature: Signatur
-  order_not_yet_placed: "Ihre Bestellung wurde <strong>NICHT</strong> abgeschlossen werden, bitte überprüfen sie die Details und klicken erneut <strong>Bestellung abschließen</strong>."
+  order_not_yet_placed: "Ihre Bestellung wurde <strong>noch nicht</strong> abgeschlossen, bitte überprüfen Sie Ihre Bestellung noch einmal und klicken Sie anschließend auf <strong>Bestellung abschließen</strong>."
   paypal_payment_id: PayPal Zahlungs ID
   pending_reason: Pending Reason
   place_order: Bestellung abschließen
   result: Ergebnis
-  review: Bewertung
+  review: Nutzer nach eingabe der Bezahldaten auf Spree Seite zurückleiten wo Bestellung erneut bestätigt werden muss
   no_shipping: Keine Versandkosten
-  cart_checkout: Warenkorb bezahlen
-  allow_guest_checkout: Gastzahlung erlauben
+  cart_checkout: Checkout direkt aus Warenkorb über Paypal erlauben
+  allow_guest_checkout: Checkout für Gäste erlauben
   paypal_account: PayPal Konto
   payer_id: Bezahler ID
   payer_country: Land
