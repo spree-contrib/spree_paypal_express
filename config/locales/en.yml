@@ -34,3 +34,4 @@ en:
        paypal_payment:
          one: PayPal Payment
          other: PayPal Payments
+  order_processed_successfully: Order Processed Successfully
