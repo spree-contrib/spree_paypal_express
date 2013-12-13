@@ -1,4 +1,7 @@
-# Official PayPal Express for Spree
+**This extension is largely no-longer maintained and it is advised you instead look at better_spree_paypal_express (
+https://github.com/radar/better_spree_paypal_express) for a better designed and maintained paypal extension.**
+
+# Unfortunate PayPal Express for Spree
 
 [![Build Status](https://secure.travis-ci.org/spree/spree_paypal_express.png?branch=master)](http://travis-ci.org/spree/spree_paypal_express)
 
