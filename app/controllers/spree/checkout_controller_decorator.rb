@@ -452,7 +452,7 @@ module Spree
 
       if I18n.locale == :en
         text = "#{I18n.t('gateway_error')}: #{text}"
-      else
+      elsif !text.blank?
         # Parameterize text for i18n key
         text = text.parameterize(sep = '_')
         text = "#{I18n.t('gateway_error')}: #{I18n.t(text)}"
