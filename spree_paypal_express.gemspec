@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   s.has_rdoc      = false
 
-  s.add_dependency 'spree_core', '~> 1.3.0'
+  s.add_dependency 'spree_core', '~> 1.3.x'
 
   s.add_development_dependency 'capybara', '~> 1.1.3'
   s.add_development_dependency 'coffee-rails'
