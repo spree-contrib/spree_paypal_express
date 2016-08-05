@@ -31,6 +31,7 @@ MUST confirm the order on the Spree site before the payment is authorized / capt
 1. Add the following line to your application's Gemfile after the `gem 'spree'` line:
 
         gem 'spree_paypal_express', :git => 'git://github.com/spree/spree_paypal_express.git'
+        # make sure to include after `gem 'spree'` line.
 
 2. Install the gem using Bundler:
 
